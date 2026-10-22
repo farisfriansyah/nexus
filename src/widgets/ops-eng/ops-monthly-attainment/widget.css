@@ -1,0 +1,5 @@
+.attain { display: flex; flex-direction: column; justify-content: space-around; gap: .4em; }
+.attain-main { display: flex; align-items: baseline; gap: .15em; }
+.attain-main b { font-size: 2.8em; line-height: 1; font-variant-numeric: tabular-nums; }
+.attain-main span { color: var(--app-muted); font-size: 1.2em; }
+.attain-sub { color: var(--app-muted); font-size: .75em; }

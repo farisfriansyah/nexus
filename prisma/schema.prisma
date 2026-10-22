@@ -1,0 +1,28 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum LayoutStatus {
+  draft
+  published
+}
+
+/// Satu baris = satu versi layout sebuah tab. `data` divalidasi Zod (TabLayout).
+model LayoutVersion {
+  id          Int          @id @default(autoincrement())
+  tab         String
+  version     Int
+  status      LayoutStatus @default(draft)
+  data        Json
+  createdBy   String?
+  createdAt   DateTime     @default(now())
+  publishedAt DateTime?
+
+  @@unique([tab, version])
+  @@index([tab, status])
+}

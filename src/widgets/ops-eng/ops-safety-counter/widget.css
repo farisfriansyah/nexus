@@ -1,0 +1,5 @@
+.safety { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: .3em .8em; }
+.safety-icon { font-size: 2em; display: inline-flex; grid-row: span 2; }
+.safety-main { display: flex; align-items: baseline; gap: .4em; flex-wrap: wrap; font-size: .85em; color: var(--app-muted); }
+.safety-days { color: var(--app-text); font-size: 3em; line-height: 1; font-variant-numeric: tabular-nums; }
+.safety-meta { display: flex; gap: 1em; flex-wrap: wrap; font-size: .75em; color: var(--app-muted); grid-column: 1 / -1; }

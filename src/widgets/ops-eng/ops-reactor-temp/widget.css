@@ -1,0 +1,14 @@
+.rt-grid-2x2 { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: .55em; height: 100%; min-height: 0; }
+.wx-analytic .rt-grid-2x2 { min-height: 420px; }
+.rt-cell { display: flex; flex-direction: column; gap: .3em; min-width: 0; min-height: 0; padding: .45em .6em; border: 1px solid var(--app-border); border-left: .25em solid var(--app-border); border-radius: .5em; background: var(--app-surface-raised); }
+.rt-head { display: flex; justify-content: space-between; align-items: center; gap: .4em; font-size: .78em; color: var(--app-muted); }
+.rt-value { display: inline-flex; align-items: baseline; gap: .25em; font-variant-numeric: tabular-nums; }
+.rt-value .status-icon { align-self: center; }
+.rt-value b { font-size: 1.6em; line-height: 1; }
+.rt-value small { font-size: .85em; color: var(--app-muted); }
+.rt-plot { position: relative; flex: 1; min-height: 0; margin-left: 2.4em; }
+.rt-plot svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.rt-grid { stroke: var(--app-border); stroke-width: 1; stroke-dasharray: 3 3; }
+.rt-axis { position: absolute; left: -2.4em; width: 2em; text-align: right; font-size: .7em; line-height: 1; transform: translateY(-50%); color: var(--app-muted); }
+.rt-axis-top { top: 0; }
+.rt-axis-bottom { top: 100%; }

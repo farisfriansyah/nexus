@@ -1,0 +1,19 @@
+/* Isi drawer detail */
+.detail { display: grid; gap: 1.2rem; padding: .5rem 0 1rem; font-size: 13px; }
+.detail-block { display: grid; gap: .7rem; padding-bottom: 1rem; border-bottom: 1px solid var(--app-border); }
+.detail-block h3 { display: flex; align-items: center; gap: .6rem; margin: 0; font-size: 15px; }
+.dmeta dl { display: grid; gap: .35rem; margin: 0; }
+.dmeta dl > div { display: grid; grid-template-columns: 7rem 1fr; gap: .6rem; }
+.dmeta dt, .dstats dt { color: var(--app-muted); }
+.dmeta dd, .dstats dd { margin: 0; }
+.dthresholds { margin: .6rem 0 0; padding-left: 1.1rem; color: var(--app-muted); }
+.dstats { display: grid; grid-template-columns: repeat(3, 1fr); gap: .6rem; margin: 0; }
+.dstats > div { padding: .5rem .7rem; border: 1px solid var(--app-border); border-radius: 8px; }
+.dstats dd { font-weight: 600; font-variant-numeric: tabular-nums; }
+.dtable-root { max-height: 14rem; overflow: hidden; border: 1px solid var(--app-border); border-radius: 8px; }
+.dtable-viewport { max-height: 14rem; }
+.dtable { width: 100%; border-collapse: collapse; }
+.dtable th, .dtable td { padding: .4rem .7rem; text-align: left; border-bottom: 1px solid var(--app-border); }
+.dtable th { position: sticky; top: 0; background: var(--app-surface-raised); color: var(--app-muted); font-weight: 600; }
+.dscroll { width: 8px; padding: 1px; }
+.dscroll-thumb { background: var(--app-border); border-radius: 4px; }

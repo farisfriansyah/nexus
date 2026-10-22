@@ -1,0 +1,9 @@
+.mtbf { display: grid; grid-auto-rows: minmax(0, 1fr); gap: .5em; list-style: none; margin: 0; padding: 0; }
+.mtbf-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "label value" "line line" "meta meta"; align-content: center; gap: .25em .8em; border-bottom: 1px solid var(--app-border); padding-bottom: .3em; }
+.mtbf-row:last-child { border-bottom: 0; }
+.mtbf-label { grid-area: label; display: flex; align-items: center; gap: .45em; min-width: 0; font-size: .9em; }
+.mtbf-value { grid-area: value; display: flex; align-items: baseline; gap: .25em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.mtbf-value b { font-size: 1.5em; }
+.mtbf-value small { color: var(--app-muted); font-size: .7em; }
+.mtbf-line { grid-area: line; }
+.mtbf-meta { grid-area: meta; color: var(--app-muted); font-size: .75em; }
