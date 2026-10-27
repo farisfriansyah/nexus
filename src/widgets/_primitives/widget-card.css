@@ -14,14 +14,14 @@
 .wx-s-on_target { box-shadow: inset .2em 0 0 var(--status-on-target); }
 .wx-head { display: flex; align-items: flex-start; justify-content: space-between; gap: .5em; min-height: 0; flex: none; }
 .wx-titles { min-width: 0; display: flex; align-items: baseline; gap: .6em; flex-wrap: wrap; }
-.wx-title { margin: 0; font-size: 1em; font-weight: 650; letter-spacing: .01em; }
-.wx-sub { color: var(--app-muted); font-size: .72em; }
+.wx-title { margin: 0; font-size: 1.6em; font-weight: 650; letter-spacing: .01em; }
+.wx-sub { color: var(--app-muted); font-size: 1.3em; }
 .wx-chips { display: flex; gap: .35em; align-items: center; flex: none; }
 .wx-chip { padding: .1em .45em; border-radius: 99px; border: 1px solid var(--app-border); color: var(--app-muted); font-size: .62em; font-weight: 600; letter-spacing: .04em; white-space: nowrap; }
 .wx-stale { color: var(--status-warning); border-color: var(--status-warning); }
 .wx-body { flex: 1; min-height: 0; min-width: 0; display: flex; flex-direction: column; }
 .wx-body > * { flex: 1; min-height: 0; }
-.wx-foot { flex: none; color: var(--app-muted); font-size: .62em; }
+.wx-foot { flex: none; color: var(--app-muted); font-size: 1em; }
 .wx-analytic .wx-body > * { flex: none; }
 .wx-analytic .wx-body { padding-bottom: 1.6em; }
 .wx-skeleton { display: grid; gap: .6em; align-content: center; }

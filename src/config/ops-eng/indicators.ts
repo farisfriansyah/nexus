@@ -85,6 +85,23 @@ export const indicators: IndicatorDef[] = [
     domain: [365, 415],
     bands: [band("critical", null, 380), band("warning", 380, 387, true), band("on_target", 387, 396, true, true), band("warning", 396, 403), band("critical", 403, null, true)]
   }),
+  ...([
+    ["r", "Fasa R", "L1"],
+    ["s", "Fasa S", "L2"],
+    ["t", "Fasa T", "L3"]
+  ] as const).flatMap(([phase, label, line]) => [
+    live(`panel.phase.${phase}.voltage`, `${label} Tegangan`, "V", 1, "Ega", `panel.phase.${phase}`, "voltage", {
+      name: `${line} Tegangan Fasa-N`, domain: [220, 245],
+      bands: [band("critical", null, 225), band("warning", 225, 230, true), band("on_target", 230, 240, true, true), band("warning", 240, 243, false, true), band("critical", 243, null)]
+    }),
+    live(`panel.phase.${phase}.current`, `${label} Arus`, "A", 2, "Ega", `panel.phase.${phase}`, "current", {
+      name: `${line} Arus Fasa`, direction: "NEUTRAL", domain: [0, 250], bands: []
+    })
+  ]),
+  live("panel.cos_total", "Cos Total", "", 3, "Ega", "panel", "cos_total", {
+    direction: "IN_RANGE", domain: [0, 1],
+    bands: [band("critical", null, 0.8), band("warning", 0.8, 0.86, true), band("on_target", 0.86, null, true)]
+  }),
   live("panel.cosphi", "Cos φ", "", 2, "Ega", "panel", "cosphi", {
     domain: [0.6, 1],
     // [ASUMSI] batas atas dibuat terbuka agar band tanpa celah

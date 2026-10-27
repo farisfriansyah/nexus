@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { THEME_STORAGE_KEY } from "@/lib/theme";
 import "@/styles/globals.css";
@@ -23,7 +22,11 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="id" className={figtree.variable} suppressHydrationWarning>
       <body>
-        <Script id="theme-init" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <script
+          type={typeof window === "undefined" ? "text/javascript" : "text/plain"}
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: themeScript }}
+        />
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>

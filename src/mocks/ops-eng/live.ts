@@ -6,6 +6,9 @@ interface LiveSpec { base: number | null; noise: number }
 
 const mixed: Record<string, number | null> = {
   "panel.volt": 392, "panel.cosphi": 0.92, "panel.amp": 840, "panel.kwh": 210.5,
+  "panel.phase.r.voltage": 232.9, "panel.phase.s.voltage": 233.4, "panel.phase.t.voltage": 234.7,
+  "panel.phase.r.current": 176.04, "panel.phase.s.current": 194.34, "panel.phase.t.current": 188.16,
+  "panel.cos_total": 0.984,
   "ct.ma1.temp": 32.5, "ct.ma4.temp": 36.5,
   "reactor.sb_ma1.temp": 33, "reactor.sb_ma4.temp": 39, "reactor.wb_ma1.temp": 30, "reactor.wb_ma4.temp": 47,
   "boiler.ma4.stack_temp": 188, "boiler.ma4.pressure": 3.75,
@@ -17,6 +20,8 @@ const mixed: Record<string, number | null> = {
 
 const critical: Record<string, number | null> = {
   ...mixed, "panel.volt": 360, "panel.cosphi": 0.7, "ct.ma1.temp": 40, "ct.ma4.temp": 41, "reactor.sb_ma1.temp": 48, "reactor.sb_ma4.temp": 49, "reactor.wb_ma1.temp": 47, "reactor.wb_ma4.temp": 50, "boiler.ma4.stack_temp": 245, "boiler.ma4.pressure": 2,
+  "panel.phase.r.voltage": 224, "panel.phase.s.voltage": 244, "panel.phase.t.voltage": 232,
+  "panel.phase.r.current": 210, "panel.phase.s.current": 240, "panel.phase.t.current": 225, "panel.cos_total": 0.72,
   "compressor.sullair.temp": 105, "compressor.sullair.pressure": 4.6, "compressor.boge.temp": 103, "compressor.boge.pressure": 7.6,
   "compressor.kobelco.temp": 108, "compressor.kobelco.pressure": 4.7, "compressor.hitachi.temp": 104, "compressor.hitachi.pressure": 7.5
 };
@@ -36,7 +41,13 @@ function specFor(key: string, scenario: Scenario): LiveSpec {
   const def = getIndicator(key);
   const span = def.domain ? def.domain[1] - def.domain[0] : 20;
   const base = baseFor(scenario)[key] ?? null;
-  return { base, noise: key === "panel.amp" ? 12 : key === "panel.kwh" ? 2 : span * 0.006 };
+  const noise = key === "panel.amp" ? 12
+    : key === "panel.kwh" ? 2
+      : key.endsWith(".current") ? 0.7
+        : key.endsWith(".voltage") ? 0.12
+          : key === "panel.cos_total" ? 0.001
+            : span * 0.006;
+  return { base, noise };
 }
 
 export const TREND_POINTS = 60;

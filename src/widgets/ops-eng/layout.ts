@@ -2,7 +2,7 @@ import type { LegacyLayout } from "@/config/layouts/legacy";
 
 const col = (widgetId: string) => ({ id: widgetId, widgetId });
 
-/** Layout seed tab Ops. Eng: 3 slide TV; analytic memakai urutan yang sama sebagai bagian. */
+/** Layout seed tab Ops. Eng; analytic memakai urutan yang sama sebagai bagian. */
 export const opsEngLayout: LegacyLayout = {
   tab: "ops-eng",
   slides: [
@@ -20,6 +20,10 @@ export const opsEngLayout: LegacyLayout = {
           ] },
           { id: "boiler-reactor", title: "Tekanan & Suhu Reaktor", rows: [
             { id: "pressure-reactor", height: 5, columns: ["ops-pressure-gauge", "ops-reactor-temp"].map(col) }
+          ] },
+          { id: "phase-monitor", title: "Panel Listrik · Per Fasa", rows: [
+            { id: "phase-values", height: 2, columns: ["ops-phase-r", "ops-phase-s", "ops-phase-t"].map(col) },
+            { id: "phase-trends", height: 3, columns: ["ops-phase-current", "ops-phase-voltage", "ops-cos-total"].map(col) }
           ] }
   ]
 };

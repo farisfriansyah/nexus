@@ -20,6 +20,12 @@ src/widgets/
 
 Widget yang hanya merangkai komponen bersama (mis. daftar bulanan `MonthlyListWidget`, tile live) cukup berisi `widget.tsx` + `index.ts`; gayanya ada di `_shared/*.css`.
 
+## Panel listrik per fasa
+
+Tab Ops. Eng memiliki enam widget terpisah untuk slide **Panel Listrik · Per Fasa**: kartu Fasa 1/L1, Fasa 2/L2, Fasa 3/L3, grafik Arus Fasa, Tegangan Fasa, dan Cos Total. Presentasi dibagikan melalui `_shared/phase-monitor.tsx` dan `phase-monitor.css`; tiap widget tetap didaftarkan sendiri di registry dan layout.
+
+Nilainya saat ini simulasi realtime dari `mocks/ops-eng/live.ts` dengan tick setiap 2 detik, bukan pembacaan panel aktual. Warna permukaan, teks, dan grid mengikuti token tema aplikasi agar tetap terbaca di tema terang maupun gelap.
+
 ## Membuat widget baru
 
 ```
@@ -41,4 +47,3 @@ Susunan slide kini disimpan di PostgreSQL (Prisma) dan diedit lewat UI: **Analit
 
 - Model: tiap slide = grid 12 kolom � 1-6 baris; widget punya lebar (� ? � ? Penuh) dan tinggi (baris). Ruang kosong diisi widget berikutnya (dense); layout yang tidak muat ditolak.
 - Setup DB: isi `DATABASE_URL` di `.env.local`, lalu `pnpm db:migrate` (`pnpm db:deploy` di server).
-

@@ -39,4 +39,12 @@ describe("layout resolver", () => {
       period: "", source: "", pic: null, updated_at: "2026-10-12T00:00:00.000Z", stale_after_sec: 0
     }).success).toBe(true);
   });
+  it("includes the per-phase monitor as its own Ops. Eng slide", () => {
+    const slide = tvLayouts["ops-eng"]?.slides.find((item) => item.id === "phase-monitor");
+    expect(slide?.items.map(({ widgetId }) => widgetId)).toEqual([
+      "ops-phase-r", "ops-phase-s", "ops-phase-t",
+      "ops-phase-current", "ops-phase-voltage", "ops-cos-total"
+    ]);
+    expect(slide?.rows).toBe(5);
+  });
 });

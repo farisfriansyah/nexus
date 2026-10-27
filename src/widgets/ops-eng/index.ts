@@ -12,6 +12,12 @@ import { opsMtbf } from "./ops-mtbf";
 import { opsMttr } from "./ops-mttr";
 import { opsOvertime } from "./ops-overtime";
 import { opsPanelMeter } from "./ops-panel-meter";
+import { opsPhaseCurrent } from "./ops-phase-current";
+import { opsPhaseR } from "./ops-phase-r";
+import { opsPhaseS } from "./ops-phase-s";
+import { opsPhaseT } from "./ops-phase-t";
+import { opsPhaseVoltage } from "./ops-phase-voltage";
+import { opsCosTotal } from "./ops-cos-total";
 import { opsPressureGauge } from "./ops-pressure-gauge";
 import { opsReactorTemp } from "./ops-reactor-temp";
 import { opsSafetyCounter } from "./ops-safety-counter";
@@ -23,5 +29,6 @@ export const opsEngWidgets = [
   opsPanelMeter, opsCoolingTower, opsBoiler, opsCompressorMatrix,
   opsDowntimeReaktor, opsDowntimePacking, opsDowntimeUtility, opsDowntimeVehicle,
   opsMttr, opsMtbf, opsKalibrasi, opsOvertime, opsMaintenanceCost,
-  opsPressureGauge, opsReactorTemp
+  opsPressureGauge, opsReactorTemp,
+  opsPhaseR, opsPhaseS, opsPhaseT, opsPhaseCurrent, opsPhaseVoltage, opsCosTotal
 ];
