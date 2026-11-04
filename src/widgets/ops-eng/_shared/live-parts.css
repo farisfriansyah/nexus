@@ -5,12 +5,12 @@
 .wx-analytic .tiles { height: auto; min-height: 360px; }
 .wx-analytic .tiles-2 { min-height: 300px; }
 .ltile { display: flex; flex-direction: column; gap: .15em; min-height: 0; min-width: 0; padding: .45em .6em; border: 1px solid var(--app-border); border-left: .25em solid var(--c, var(--app-border)); border-radius: .5em; background: var(--app-surface-raised); overflow: hidden; container-type: size; container-name: lt; }
-.ltile-head { display: flex; justify-content: space-between; align-items: center; gap: .4em; font-size: .78em; color: var(--app-muted); }
+.ltile-head { display: flex; justify-content: space-between; align-items: center; gap: .4em; font-size: var(--font-size-body); color: var(--app-muted); }
 .ltile-value { display: flex; align-items: baseline; gap: .25em; font-variant-numeric: tabular-nums; }
-.ltile-value b { font-size: 2em; line-height: 1.05; }
-.ltile-value small { color: var(--app-muted); font-size: .8em; }
+.ltile-value b { font-size: max(var(--font-size-body), 2em); line-height: 1.05; }
+.ltile-value small { color: var(--app-muted); font-size: var(--font-size-body); }
 .ltile-spark { flex: 1; min-height: 0; }
-.ltile.is-compact .ltile-value b { font-size: 1.3em; }
+.ltile.is-compact .ltile-value b { font-size: max(var(--font-size-body), 1.25em); }
 .ltile.is-compact { padding: .25em .5em; gap: 0; }
 @container lt (max-height: 6.5em) { .ltile-spark { display: none; } }
 @container lt (max-height: 4.2em) { .gauge { display: none; } }

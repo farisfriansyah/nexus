@@ -9,6 +9,8 @@ import { currentPeriod } from "@/lib/status/time";
 import { buildOpsDataset } from "@/mocks/ops-eng/dataset";
 import { createLiveSimulator, TICK_MS, type LiveTick } from "@/mocks/ops-eng/live";
 import { DEFAULT_SCENARIO, parseScenario, type LiveReading, type OpsDataset, type Scenario, type Status } from "@/widgets/ops-eng/schemas";
+import { getIndicatorThresholdRevision, subscribeIndicatorThresholds } from "@/features/indicator-thresholds/runtime";
+import { useIndicatorThresholdRevision } from "@/features/indicator-thresholds/hooks";
 
 /* ---------- scenario & periode ---------- */
 
@@ -31,15 +33,19 @@ export function useEndPeriod(): string {
 
 /* ---------- dataset bulanan ---------- */
 
-const datasetCache = new Map<Scenario, OpsDataset>();
+const datasetCache = new Map<Scenario, { revision: number; dataset: OpsDataset }>();
 export function getDataset(scenario: Scenario): OpsDataset {
-  let dataset = datasetCache.get(scenario);
-  if (!dataset) { dataset = buildOpsDataset(scenario); datasetCache.set(scenario, dataset); }
+  const revision = getIndicatorThresholdRevision();
+  const cached = datasetCache.get(scenario);
+  if (cached?.revision === revision) return cached.dataset;
+  const dataset = buildOpsDataset(scenario);
+  datasetCache.set(scenario, { revision, dataset });
   return dataset;
 }
 
 export function useDataset(): OpsDataset {
   const scenario = useScenario();
+  useIndicatorThresholdRevision();
   return getDataset(scenario);
 }
 
@@ -60,6 +66,7 @@ class LiveStore {
   private source: EventSource | null = null;
   private fallback: ReturnType<typeof setInterval> | null = null;
   private clock: ReturnType<typeof setInterval> | null = null;
+  private unsubscribeThresholds: (() => void) | null = null;
   private readings = new Map<string, LiveReading>();
   private debouncers = new Map<string, StatusDebouncer>();
   private shown = new Map<string, Status>();
@@ -126,6 +133,7 @@ class LiveStore {
   }
 
   private start() {
+    this.unsubscribeThresholds = subscribeIndicatorThresholds(() => this.reconfigureStatuses());
     this.clock = setInterval(() => this.emit(), 10_000);
     if (typeof EventSource === "undefined") { this.startFallback(); return; }
     const source = new EventSource(`/api/mock/stream?live=1&scenario=${this.scenario}`);
@@ -135,7 +143,23 @@ class LiveStore {
     source.onerror = () => { if (!this.readings.size) { source.close(); this.source = null; this.startFallback(); } };
   }
 
+  private reconfigureStatuses() {
+    for (const [key, reading] of this.readings) {
+      const def = getIndicator(key);
+      const initial = evaluateStatus(def, reading.value);
+      this.debouncers.get(key)?.dispose();
+      this.shown.set(key, initial);
+      this.debouncers.set(key, createStatusDebouncer(initial, debounceOptions(def), (status) => {
+        this.shown.set(key, status);
+        this.emit();
+      }));
+    }
+    this.emit();
+  }
+
   private stop() {
+    this.unsubscribeThresholds?.();
+    this.unsubscribeThresholds = null;
     this.source?.close();
     this.source = null;
     if (this.fallback) clearInterval(this.fallback);

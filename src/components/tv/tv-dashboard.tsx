@@ -14,7 +14,7 @@ import { useLiveStream } from "@/lib/sse/use-live-stream";
 
 const NO_HIDDEN: string[] = [];
 
-export function TvDashboard({ layout, tab, debug, heartbeatReloadMinutes }: { layout: TabLayout; tab: string; debug: boolean; heartbeatReloadMinutes: number }) {
+export function TvDashboard({ layout, tab, profileId, debug, heartbeatReloadMinutes }: { layout: TabLayout; tab: string; profileId: string | null; debug: boolean; heartbeatReloadMinutes: number }) {
   const hidden = usePreferences((state) => state.hiddenTv[tab] ?? NO_HIDDEN);
   const autoplayEnabled = usePreferences((state) => state.autoplay);
   const intervalSeconds = usePreferences((state) => state.intervalSeconds);
@@ -27,6 +27,7 @@ export function TvDashboard({ layout, tab, debug, heartbeatReloadMinutes }: { la
   const emblaOptions = useMemo(() => ({ loop: slides.length > 1, duration: 35 }), [slides.length]);
   const [emblaRef, emblaApi] = useEmblaCarousel(emblaOptions);
   const [selected, setSelected] = useState(0);
+  const activeSlide = slides[selected] ?? slides[0];
   const [progress, setProgress] = useState(0);
   const [pausedByUser, setPausedByUser] = useState(false);
   const [idle, setIdle] = useState(true);
@@ -118,13 +119,23 @@ export function TvDashboard({ layout, tab, debug, heartbeatReloadMinutes }: { la
   // Layout diubah lewat editor: bandingkan dengan versi terbit, lalu refresh data server.
   useEffect(() => {
     const timer = window.setInterval(() => {
-      void fetch(`/api/layout/${tab}`, { cache: "no-store" })
-        .then((response) => (response.ok ? response.json() : null))
+      void fetch(profileId ? `/api/tv-layout-profiles/${profileId}/${tab}` : `/api/layout/${tab}`, { cache: "no-store" })
+        .then((response) => {
+          if (profileId && (response.status === 404 || response.status === 422)) {
+            window.localStorage.removeItem("nexus-tv-layout-profile");
+            const url = new URL(window.location.href);
+            url.searchParams.delete("profileId");
+            window.dispatchEvent(new Event("nexus-profile-change"));
+            router.replace(`${pathname}${url.search}`);
+            return null;
+          }
+          return response.ok ? response.json() : null;
+        })
         .then((loaded: { layout?: TabLayout } | null) => { if (loaded?.layout && JSON.stringify(loaded.layout.slides) !== layoutKey) router.refresh(); })
         .catch(() => undefined);
     }, 30_000);
     return () => window.clearInterval(timer);
-  }, [tab, layoutKey, router]);
+  }, [tab, profileId, layoutKey, pathname, router]);
 
   useEffect(() => {
     const keyboard =  (event: KeyboardEvent) => {
@@ -137,6 +148,7 @@ export function TvDashboard({ layout, tab, debug, heartbeatReloadMinutes }: { la
 
   return (
     <div className={`tv-canvas ${cursorHidden ? "cursor-hidden" : ""}`} data-testid="tv-canvas">
+      {activeSlide && <div className="tv-slide-title" aria-live="polite"><h1>{activeSlide.title}</h1></div>}
       <div className="tv-slide-viewport" ref={emblaRef}>
         <div className="tv-slide-track">
           {slides.length === 0 && (

@@ -5,6 +5,8 @@ import { useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
 import { StatusIcon } from "@/widgets/_primitives/status";
 import { useUnits } from "@/widgets/ops-eng/_shared/hooks";
+import { useLive } from "@/widgets/ops-eng/_shared/data";
+import { buildCriticalIndicatorAlerts } from "@/widgets/ops-eng/_shared/selectors";
 
 interface CriticalAlert { id: string; label: string; valueText?: string; pic: string; group: string; at: string }
 
@@ -18,12 +20,16 @@ const timeLabel = () => new Date().toLocaleTimeString("id-ID", { hour: "2-digit"
  */
 export function CriticalAlerts() {
   const { ready, units } = useUnits();
+  const live = useLive();
   const [alerts, setAlerts] = useState<CriticalAlert[]>([]);
   const known = useRef(new Set<string>());
 
   useEffect(() => {
-    if (!ready) return;
-    const critical = units.filter((unit) => unit.status === "critical");
+    if (!ready || !live.ready) return;
+    const critical = [
+      ...buildCriticalIndicatorAlerts(live.readings, live.statuses),
+      ...units.filter((unit) => unit.status === "critical" && unit.group !== "Live Utility")
+    ];
     const criticalIds = new Set(critical.map((unit) => unit.id));
     for (const id of known.current) if (!criticalIds.has(id)) known.current.delete(id);
     const fresh = critical.filter((unit) => !known.current.has(unit.id));
@@ -34,7 +40,7 @@ export function CriticalAlerts() {
       ...current.filter((alert) => !fresh.some((unit) => unit.id === alert.id)),
       ...fresh.map((unit) => ({ id: unit.id, label: unit.label, valueText: unit.valueText, pic: unit.pic, group: unit.group, at }))
     ]);
-  }, [ready, units]);
+  }, [ready, units, live]);
 
   if (!alerts.length) return null;
   const visible = alerts.slice(0, MAX_VISIBLE);

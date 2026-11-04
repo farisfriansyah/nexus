@@ -1,4 +1,5 @@
 import type { BandDef, IndicatorDef } from "@/widgets/ops-eng/schemas";
+import { getIndicatorBandsOverride } from "@/features/indicator-thresholds/runtime";
 
 type BandStatus = BandDef["status"];
 
@@ -171,7 +172,8 @@ export const indicatorByKey: ReadonlyMap<string, IndicatorDef> = new Map(indicat
 export function getIndicator(key: string): IndicatorDef {
   const def = indicatorByKey.get(key);
   if (!def) throw new Error(`Indikator tidak dikenal: ${key}`);
-  return def;
+  const bands = getIndicatorBandsOverride(key);
+  return bands ? { ...def, bands } : def;
 }
 
 export const liveKeys = indicators.filter((def) => def.cadence === "REALTIME").map((def) => def.key);

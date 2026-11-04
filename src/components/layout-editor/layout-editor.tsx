@@ -55,7 +55,7 @@ function CanvasItem({ item, position, index, last, onChange, onMove, onRemove }:
   );
 }
 
-export function LayoutEditor({ tab, tabLabel, initial }: { tab: string; tabLabel: string; initial: { layout: TabLayout; source: Source; version: number | null } }) {
+export function LayoutEditor({ tab, tabLabel, initial, profileId, profileName }: { tab: string; tabLabel: string; initial: { layout: TabLayout; source: Source; version: number | null }; profileId?: number; profileName?: string }) {
   const [layout, setLayout] = useState<TabLayout>(initial.layout);
   const [history, setHistory] = useState<TabLayout[]>([]);
   const [source, setSource] = useState<Source>(initial.source);
@@ -140,11 +140,15 @@ export function LayoutEditor({ tab, tabLabel, initial }: { tab: string; tabLabel
   async function save(publish: boolean) {
     setBusy(true);
     try {
-      await request("PUT", `/api/layout/${tab}`, layout);
-      if (publish) await request("POST", `/api/layout/${tab}/publish`);
+      if (profileId) {
+        await request("PUT", `/api/tv-layout-profiles/${profileId}/${tab}`, layout);
+      } else {
+        await request("PUT", `/api/layout/${tab}`, layout);
+        if (publish) await request("POST", `/api/layout/${tab}/publish`);
+      }
       setSource(publish ? "published" : "draft");
       setDirty(false);
-      setNotice({ kind: "ok", text: publish ? "Layout diterapkan. TV akan memuat ulang otomatis." : "Draft tersimpan." });
+      setNotice({ kind: "ok", text: profileId ? "Layout preset tersimpan. TV akan memuat ulang otomatis." : publish ? "Layout diterapkan. TV akan memuat ulang otomatis." : "Draft tersimpan." });
     } catch (error) {
       setNotice({ kind: "error", text: error instanceof Error ? error.message : "Gagal menyimpan" });
     } finally {
@@ -175,15 +179,17 @@ export function LayoutEditor({ tab, tabLabel, initial }: { tab: string; tabLabel
     <main className="le" data-testid="layout-editor">
       <header className="le-bar">
         <div>
-          <h1>Atur Layout · {tabLabel}</h1>
+          <h1>Atur Layout · {tabLabel}{profileName ? ` · ${profileName}` : ""}</h1>
           <p>Susun slide, urutan, dan ukuran widget. Ruang kosong otomatis diisi widget berikutnya.</p>
         </div>
-        <span className={`le-badge is-${dirty ? "dirty" : source}`}>{dirty ? "Perubahan belum disimpan" : SOURCE_LABEL[source]}</span>
+        <span className={`le-badge is-${dirty ? "dirty" : source}`}>{dirty ? "Perubahan belum disimpan" : profileId ? `Preset: ${profileName}` : SOURCE_LABEL[source]}</span>
         <Button variant="ghost" size="sm" onClick={undo} disabled={history.length === 0}><Undo2 size={14} /> Urungkan</Button>
-        <Button variant="ghost" size="sm" onClick={() => void reset()} disabled={busy || source === "default"}>Reset ke bawaan</Button>
-        <Button variant="outline" size="sm" onClick={() => void save(false)} disabled={!canSave || !dirty}>Simpan draft</Button>
-        <Button size="sm" onClick={() => void save(true)} disabled={!canSave || (!dirty && source !== "draft")}>Terapkan ke TV</Button>
-        <Link className="le-link" href={`/tv/${tab}`}>← Kembali ke TV</Link>
+        {!profileId && <Button variant="ghost" size="sm" onClick={() => void reset()} disabled={busy || source === "default"}>Reset ke bawaan</Button>}
+        {!profileId && <Button variant="outline" size="sm" onClick={() => void save(false)} disabled={!canSave || !dirty}>Simpan draft</Button>}
+        {profileId
+          ? <Button size="sm" onClick={() => void save(false)} disabled={!canSave || !dirty}>Simpan preset</Button>
+          : <Button size="sm" onClick={() => void save(true)} disabled={!canSave || (!dirty && source !== "draft")}>Terapkan ke TV</Button>}
+        <Link className="le-link" href={`/tv/${tab}${profileId ? `?profileId=${profileId}` : ""}`}>← Kembali ke TV</Link>
       </header>
       {notice && <p className={`le-notice is-${notice.kind}`} role="status">{notice.text}</p>}
       {overflowSlides.length > 0 && (

@@ -49,21 +49,35 @@ const journalLabel = (updatedAt: string) => `diinput ${relativeAge(updatedAt, no
 
 interface BaseProps { mode: DashboardMode; widgetId: string; title: string; keys: string[] }
 
-/** Beberapa entitas bulanan dalam satu kartu (downtime reaktor/packing/utilitas/kendaraan). */
-export function MonthlyListWidget({ mode, widgetId, title, keys, subtitle }: BaseProps & { subtitle?: string }) {
+/** Beberapa entitas bulanan dalam satu widget: grid kartu, tiap kartu = angka, delta, dan grafik batang + tren 12 bulan. */
+export function MonthlyListWidget({ mode, widgetId, title, keys, subtitle, showYtd = false }: BaseProps & { subtitle?: string; showYtd?: boolean }) {
   const { payload, stale } = useMonthly(keys);
   const worst: Status = payload ? aggregateStatus(payload.rows.map((row) => row.status)) : "no_data";
+  const count = payload?.rows.length ?? keys.length;
+  const cols = count === 3 ? 3 : 2;
+  const year = payload ? payload.period.slice(0, 4) : "";
   return (
-    <WidgetCard mode={mode} widgetId={widgetId} title={title} subtitle={subtitle} status={payload ? worst : undefined} showBadge={mode === "analytic"} loading={!payload} stale={stale} updatedLabel={payload ? journalLabel(payload.updatedAt) : undefined} source="Jurnal harian" pic={getIndicator(keys[0]!).pic} summary={payload?.rows.map(rowSummary).join("; ")}>
-      <ul className="mlist" data-count={payload?.rows.length}>
-        {payload?.rows.map((row) => (
-          <li key={row.key} className={`mrow s-row-${row.status}`} data-status={row.status} data-key={row.key}>
-            <span className="mrow-label"><StatusIcon status={row.status} /><span>{row.label}</span></span>
-            <span className="mrow-value"><b>{valueText(row)}</b><small>{row.unit}</small></span>
-            <span className="mrow-delta"><RowDelta row={row} /></span>
-            <span className="mrow-bars"><RowBars row={row} /></span>
-          </li>
-        ))}
+    <WidgetCard mode={mode} widgetId={widgetId} title={title} indicatorKeys={keys} subtitle={subtitle} status={payload ? worst : undefined} showBadge={mode === "analytic"} loading={!payload} stale={stale} updatedLabel={payload ? journalLabel(payload.updatedAt) : undefined} source="Jurnal harian" pic={getIndicator(keys[0]!).pic} summary={payload?.rows.map(rowSummary).join("; ")}>
+      <ul className="mgrid" style={{ "--cols": cols } as React.CSSProperties} data-count={count}>
+        {payload?.rows.map((row) => {
+          const def = getIndicator(row.key);
+          const ytd = row.series.filter((point) => point.period.startsWith(year)).reduce((sum, point) => sum + (point.value ?? 0), 0);
+          return (
+            <li key={row.key} className="mcard" data-status={row.status} data-key={row.key}>
+              <div className="mcard-head">
+                <span className="mcard-label"><StatusIcon status={row.status} /><span>{row.label}</span></span>
+                {showYtd && <span className="mcard-ytd">YTD <b>{formatFixed(ytd, 0)}</b></span>}
+              </div>
+              <div className="mcard-value">
+                <b>{valueText(row)}</b><small>{row.unit}</small>
+                <RowDelta row={row} />
+              </div>
+              {def.targetText && <div className="mcard-target">Target {def.targetText}</div>}
+              <div className="mcard-chart"><RowBars row={row} /></div>
+              <div className="mcard-months" aria-hidden="true">{row.series.map((point) => <span key={point.period}>{monthLabel(point.period).slice(0, 1)}</span>)}</div>
+            </li>
+          );
+        })}
       </ul>
     </WidgetCard>
   );
@@ -75,7 +89,7 @@ export function MonthlySingleWidget({ mode, widgetId, title, keys, bulletMax, ch
   const row = payload?.rows[0];
   const def = getIndicator(keys[0]!);
   return (
-    <WidgetCard mode={mode} widgetId={widgetId} title={title} status={row?.status} showBadge={mode === "analytic"} loading={!payload} stale={stale} updatedLabel={payload ? journalLabel(payload.updatedAt) : undefined} source="Jurnal harian" pic={def.pic} summary={row ? rowSummary(row) : undefined}>
+    <WidgetCard mode={mode} widgetId={widgetId} title={title} indicatorKeys={keys} status={row?.status} showBadge={mode === "analytic"} loading={!payload} stale={stale} updatedLabel={payload ? journalLabel(payload.updatedAt) : undefined} source="Jurnal harian" pic={def.pic} summary={row ? rowSummary(row) : undefined}>
       {row && (
         <div className="single" data-status={row.status}>
           <div className="single-main">

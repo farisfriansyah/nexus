@@ -1,4 +1,4 @@
 .cmatrix { display: grid; grid-template-rows: repeat(4, minmax(0, 1fr)); gap: .4em; height: 100%; min-height: 0; }
 .wx-analytic .cmatrix { height: auto; min-height: 440px; }
 .cmatrix-row { display: grid; grid-template-columns: 4.5em 1fr 1fr; gap: .4em; align-items: stretch; min-height: 0; }
-.cmatrix-name { align-self: center; font-size: .85em; font-weight: 600; }
+.cmatrix-name { align-self: center; font-size: var(--font-size-body); font-weight: 600; }

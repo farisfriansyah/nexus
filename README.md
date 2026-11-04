@@ -36,9 +36,22 @@ Pembatasan domain diperiksa server-side di callback Auth.js: email harus terveri
 | `ADMIN_EMAILS` | Daftar email admin dipisah koma | kosong |
 | `SESSION_MAX_AGE_SECONDS` | Durasi maksimum sesi JWT | 30 hari |
 | `API_BASE_URL` | URL backend CI4/Laravel untuk BFF | tidak ada |
+| `DATABASE_URL` | URL MySQL/MariaDB untuk layout | `mysql://root@127.0.0.1:3306/nexus_plant` |
 | `HEARTBEAT_RELOAD_MINUTES` | Watchdog jika heartbeat macet | 10 menit |
 
 Route privat memeriksa sesi di proxy, server layout, serta handler yang memerlukan autentikasi. Route API backend sebaiknya menggunakan `requireSession()` di setiap handler.
+
+## Database lokal XAMPP
+
+1. Jalankan **MySQL** dari XAMPP Control Panel dan buat database `nexus_plant` lewat phpMyAdmin dengan collation `utf8mb4_unicode_ci`.
+2. Atur `DATABASE_URL` di `.env.local` ke `mysql://root@127.0.0.1:3306/nexus_plant`. Jika root memakai password atau port MySQL berbeda, sesuaikan URL (encode karakter khusus pada password).
+3. Terapkan skema: `pnpm db:migrate`.
+
+Untuk memindahkan versi layout dari PostgreSQL lokal lama, jangan hapus database PostgreSQL sebelum selesai. Set `POSTGRES_SOURCE_URL` di `.env.local` ke URL PostgreSQL lama, lalu jalankan `pnpm db:copy-postgres`. Perintah hanya menyalin tabel `LayoutVersion` ke MySQL dan menolak menimpa tabel target yang sudah berisi data. Setelah aplikasi dan layout terverifikasi di MySQL, URL PostgreSQL lama dapat dihapus.
+
+## Preset layout TV
+
+Admin dapat membuka **Preset layout** dari navbar TV untuk membuat, mengganti nama, dan menghapus preset bersama. Preset baru dimulai dari layout TV yang sedang diterbitkan; tiap tab dapat disesuaikan melalui editor preset dan langsung tersimpan. Perangkat TV memilih preset lewat selector di navbar, lalu pilihan disimpan di local storage perangkat dan digunakan pada seluruh tab. Profile layout disimpan pada tabel `TvLayoutProfile`; jalankan `pnpm db:migrate` setelah mengambil perubahan skema.
 
 ## Struktur dan validasi
 

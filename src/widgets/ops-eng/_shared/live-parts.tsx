@@ -17,7 +17,7 @@ export function useLiveGroup(keys: string[]) {
   const live = useLive();
   const mounted = useMounted();
   const statuses = keys.map((key) => live.statuses[key] ?? "no_data");
-  const countable = keys.filter((key) => getIndicator(key).direction !== "NEUTRAL");
+  const countable = keys.filter((key) => getIndicator(key).bands.length > 0);
   const status: Status = aggregateStatus(countable.map((key) => live.statuses[key] ?? "no_data"));
   const readings = keys.map((key) => live.readings[key]).filter(Boolean);
   const stale = readings.length > 0 && readings.every((reading) => isReadingStale(reading, getIndicator(reading!.key).staleAfterSec, live.now));
@@ -26,7 +26,7 @@ export function useLiveGroup(keys: string[]) {
     const def = getIndicator(key);
     const reading = live.readings[key];
     const shown = reading && statuses[index] !== "no_data" && reading.value !== null;
-    return `${def.name} ${shown ? `${formatFixed(reading!.value!, def.decimals)} ${def.unit}` : "tidak ada data"}, status ${STATUS_LABEL[def.direction === "NEUTRAL" ? "neutral" : statuses[index]!]}`;
+    return `${def.name} ${shown ? `${formatFixed(reading!.value!, def.decimals)} ${def.unit}` : "tidak ada data"}, status ${STATUS_LABEL[def.bands.length === 0 ? "neutral" : statuses[index]!]}`;
   }).join("; ");
   const updatedLabel = lastTs ? new Date(lastTs).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", hour12: false }).replace(".", ":") : undefined;
   const pic = getIndicator(keys[0]!).pic;
@@ -37,7 +37,7 @@ export function LiveTile({ keyName, label, compact = false, hero = false, spark 
   const live = useLive();
   const def = getIndicator(keyName);
   const reading = live.readings[keyName];
-  const status: Status = def.direction === "NEUTRAL" ? "neutral" : (live.statuses[keyName] ?? "no_data");
+  const status: Status = def.bands.length === 0 ? "neutral" : (live.statuses[keyName] ?? "no_data");
   const value = reading && status !== "no_data" ? reading.value : null;
   const hasBands = def.bands.length > 0 && def.domain;
   const tooltip = thresholdSentences(def).join(" Â· ");

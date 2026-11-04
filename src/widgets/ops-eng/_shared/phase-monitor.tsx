@@ -4,6 +4,9 @@ import "./phase-monitor.css";
 import type { CSSProperties } from "react";
 import { getIndicator } from "@/config/ops-eng/indicators";
 import { formatFixed } from "@/lib/format";
+import { thresholdSentences } from "@/lib/status/describe";
+import { BandGauge } from "@/widgets/_primitives/charts";
+import { StatusIcon } from "@/widgets/_primitives/status";
 import { WidgetCard } from "@/widgets/_primitives/widget-card";
 import type { Status } from "@/widgets/ops-eng/schemas";
 import type { WidgetProps } from "@/features/widgets-registry/types";
@@ -45,22 +48,26 @@ function PhaseCard({ phase, mode, widgetId, title }: WidgetProps & { phase: Phas
   const live = group.live;
 
   return (
-    <WidgetCard mode={mode} widgetId={widgetId} title={title} subtitle={config.phase} status={group.ready ? group.status : undefined} showBadge={mode === "analytic"} loading={!group.ready} stale={group.stale} updatedLabel={group.updatedLabel} source="Plant Vision" pic="Ega" summary={group.summary}>
+    <WidgetCard mode={mode} widgetId={widgetId} title={title} indicatorKeys={keys} status={group.ready ? group.status : undefined} showBadge={mode === "analytic"} loading={!group.ready} stale={group.stale} updatedLabel={group.updatedLabel} source="Plant Vision" pic="Ega" summary={group.summary}>
       <div className="phase-card-content" style={{ "--phase-color": config.color } as CSSProperties}>
         {(["voltage", "current"] as const).map((metric) => {
           const key = config[metric];
           const def = getIndicator(key);
           const reading = live.readings[key];
-          const status: Status = def.direction === "NEUTRAL" ? "neutral" : live.statuses[key] ?? "no_data";
+          const status: Status = def.bands.length === 0 ? "neutral" : live.statuses[key] ?? "no_data";
           const value = reading && status !== "no_data" ? reading.value : null;
           const range: [number, number] = metric === "voltage" ? [220, 245] : [0, 250];
           const percent = value === null ? 0 : Math.min(100, Math.max(0, ((value - range[0]) / (range[1] - range[0])) * 100));
-          const label = metric === "voltage" ? `${config.voltageLabel} — Tegangan Fasa-N` : `${config.currentLabel} — Arus Fasa`;
+          const label = metric === "voltage" ? "Tegangan Fasa-N" : "Arus Fasa";
+          const symbol = metric === "voltage" ? config.voltageLabel : config.currentLabel;
           return (
-            <div className="phase-card-reading" key={key}>
+            <div className="phase-card-reading" key={key} data-status={status}>
+              <div className="phase-card-label"><b>{symbol}</b><span>{label}</span>{def.bands.length > 0 && <StatusIcon status={status} />}</div>
               <strong>{formatFixed(value, def.decimals)}<small>{def.unit ? ` ${def.unit}` : ""}</small></strong>
-              <span>{label}</span>
-              <i className={`phase-card-meter s-${status}`} style={{ "--meter-width": `${percent}%` } as CSSProperties} />
+              {def.bands.length > 0
+                ? <BandGauge bands={def.bands} domain={range} value={value} status={status} tooltip={thresholdSentences(def).join(" \u00b7 ")} />
+                : <i className={`phase-card-meter s-${status}`} style={{ "--meter-width": `${percent}%` } as CSSProperties} />}
+              <div className="phase-card-scale" aria-hidden="true"><span>{range[0]}</span><span>{range[1]}</span></div>
             </div>
           );
         })}
@@ -105,7 +112,7 @@ function TrendWidget({ metric, mode, widgetId, title }: WidgetProps & { metric: 
   });
 
   return (
-    <WidgetCard mode={mode} widgetId={widgetId} title={title} subtitle="Realtime" status={group.ready ? group.status : undefined} showBadge={mode === "analytic"} loading={!group.ready} stale={group.stale} updatedLabel={group.updatedLabel} source="Plant Vision" pic="Ega" summary={`${config.title}${unitLabel}: ${lastValues.map((value) => formatFixed(value, config.decimals)).join(", ")}`}>
+    <WidgetCard mode={mode} widgetId={widgetId} title={title} indicatorKeys={[...config.keys]} subtitle="Realtime" status={group.ready ? group.status : undefined} showBadge={mode === "analytic"} loading={!group.ready} stale={group.stale} updatedLabel={group.updatedLabel} source="Plant Vision" pic="Ega" summary={`${config.title}${unitLabel}: ${lastValues.map((value) => formatFixed(value, config.decimals)).join(", ")}`}>
       <section className="phase-trend" aria-label={`${config.title}${unitLabel}`}>
         <div className="phase-trend-heading">
           {config.lines.length > 1 && <div className="phase-trend-legend">{config.lines.map((line) => <span key={line.key}><i style={{ background: line.color }} />{line.label}</span>)}</div>}
@@ -126,7 +133,7 @@ function TrendWidget({ metric, mode, widgetId, title }: WidgetProps & { metric: 
           {config.lines.map((line) => <path key={line.key} d={pathFor(line.key)} fill="none" stroke={line.color} className="phase-trend-line" />)}
           {timeLabels.map((label, index) => {
             const x = plot.left + (index / 2) * plotWidth;
-            return <text className="phase-trend-time" key={label} x={x} y={height - 5} textAnchor="middle">{label}</text>;
+            return <text className="phase-trend-time" key={`time-${index}`} x={x} y={height - 5} textAnchor="middle">{label}</text>;
           })}
         </svg>
       </section>

@@ -1,2 +1,2 @@
 .status-icon { flex: none; display: inline-block; vertical-align: -.12em; }
-.status-badge { display: inline-flex; align-items: center; gap: .35em; padding: .1em .55em .1em .4em; border-radius: 99px; border: 1px solid var(--c, var(--app-border)); color: var(--app-text); font-size: .72em; font-weight: 600; white-space: nowrap; }
+.status-badge { display: inline-flex; align-items: center; gap: .35em; padding: .1em .55em .1em .4em; border-radius: 99px; border: 1px solid var(--c, var(--app-border)); color: var(--app-text); font-size: var(--font-size-body); font-weight: 600; white-space: nowrap; }

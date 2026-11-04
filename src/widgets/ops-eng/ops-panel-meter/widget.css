@@ -3,7 +3,7 @@
 .pm > .is-hero { grid-row: 1 / 3; }
 .pm-pair { display: grid; grid-template-columns: 1fr 1fr; gap: .45em; min-height: 0; }
 .pm-pair .ltile-spark { display: block; min-height: 1.6em; }
-.pm .is-hero .ltile-value b { font-size: 3.4em; }
-.pm .is-hero .ltile-value small { font-size: 1.1em; }
+.pm .is-hero .ltile-value b { font-size: max(var(--font-size-body), 3.25em); }
+.pm .is-hero .ltile-value small { font-size: var(--font-size-body); }
 .wx-analytic .pm { height: auto; min-height: 360px; }
 @container wx (max-width: 22em) { .pm { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; } .pm-pair { display: none; } .pm > .is-hero { grid-row: auto; } }

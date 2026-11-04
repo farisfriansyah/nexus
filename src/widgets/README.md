@@ -22,7 +22,7 @@ Widget yang hanya merangkai komponen bersama (mis. daftar bulanan `MonthlyListWi
 
 ## Panel listrik per fasa
 
-Tab Ops. Eng memiliki enam widget terpisah untuk slide **Panel Listrik · Per Fasa**: kartu Fasa 1/L1, Fasa 2/L2, Fasa 3/L3, grafik Arus Fasa, Tegangan Fasa, dan Cos Total. Presentasi dibagikan melalui `_shared/phase-monitor.tsx` dan `phase-monitor.css`; tiap widget tetap didaftarkan sendiri di registry dan layout.
+Tab Ops. Eng memiliki empat slide **Panel Listrik · Per Fasa** untuk Reaktor 1–4. Tiap slide menampilkan enam widget yang sama: kartu Fasa 1/L1, Fasa 2/L2, Fasa 3/L3, grafik Arus Fasa, Tegangan Fasa, dan Cos Total. Presentasi dibagikan melalui `_shared/phase-monitor.tsx` dan `phase-monitor.css`; tiap widget tetap didaftarkan sendiri di registry dan layout.
 
 Nilainya saat ini simulasi realtime dari `mocks/ops-eng/live.ts` dengan tick setiap 2 detik, bukan pembacaan panel aktual. Warna permukaan, teks, dan grid mengikuti token tema aplikasi agar tetap terbaca di tema terang maupun gelap.
 
@@ -43,7 +43,7 @@ Buka folder widget tersebut. CSS di-import langsung oleh `widget.tsx`, jadi tida
 
 ## Mengatur slide & layout
 
-Susunan slide kini disimpan di PostgreSQL (Prisma) dan diedit lewat UI: **Analitik ? ikon grid di header ? /analytics/layout/<tab>** (admin). Alur: ubah ? *Simpan draft* ? *Terapkan ke TV* (TV memuat ulang sendiri dalam ~30 dtk). Jika DB kosong/tidak terjangkau, dipakai seed `layout.ts`.
+Susunan slide kini disimpan di MySQL/MariaDB (Prisma) dan diedit lewat UI: **Analitik ? ikon grid di header ? /analytics/layout/<tab>** (admin). Alur: ubah ? *Simpan draft* ? *Terapkan ke TV* (TV memuat ulang sendiri dalam ~30 dtk). Jika DB kosong/tidak terjangkau, dipakai seed `layout.ts`.
 
 - Model: tiap slide = grid 12 kolom � 1-6 baris; widget punya lebar (� ? � ? Penuh) dan tinggi (baris). Ruang kosong diisi widget berikutnya (dense); layout yang tidak muat ditolak.
-- Setup DB: isi `DATABASE_URL` di `.env.local`, lalu `pnpm db:migrate` (`pnpm db:deploy` di server).
+- Setup DB: isi `DATABASE_URL` MySQL di `.env.local`, lalu `pnpm db:migrate` (`pnpm db:deploy` di server).

@@ -1,20 +1,28 @@
-/* Daftar bulanan multi-entitas & single (dipakai widget bulanan) */
-.mlist { display: grid; grid-auto-rows: minmax(0, 1fr); gap: .35em; }
-.mrow { display: grid; grid-template-columns: minmax(0, 1.15fr) auto auto minmax(0, 1.5fr); align-items: center; gap: .8em; padding: .2em .1em; border-bottom: 1px solid var(--app-border); min-height: 0; }
-.mrow:last-child { border-bottom: 0; }
-.mrow-label { display: flex; align-items: center; gap: .45em; min-width: 0; font-size: .9em; }
-.mrow-label span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.mrow-value { display: flex; align-items: baseline; gap: .25em; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.mrow-value b { font-size: 1.5em; }
-.mrow-value small { color: var(--app-muted); font-size: .7em; }
-.mrow-bars { height: 100%; min-height: 0; max-height: 2.6em; }
-@container wx (max-width: 24em) { .mrow { grid-template-columns: minmax(0, 1fr) auto auto; } .mrow-bars { display: none; } }
-@container wx (max-height: 10em) { .mrow-bars { display: none; } .mrow { grid-template-columns: minmax(0, 1fr) auto auto; } }
-
+/* Grid kartu bulanan multi-entitas & single (dipakai widget bulanan) */
+.mgrid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr)); grid-auto-rows: minmax(0, 1fr); gap: .6em; height: 100%; min-height: 0; }
+.wx-analytic .mgrid { height: auto; grid-auto-rows: minmax(12em, auto); }
+.mcard { display: flex; flex-direction: column; gap: .25em; min-width: 0; min-height: 0; padding: .55em .7em; border: 1px solid var(--app-border); border-top: .25em solid var(--status-no-data); border-radius: .5em; background: var(--app-surface-raised); overflow: hidden; }
+.mcard[data-status="on_target"] { border-top-color: var(--status-on-target); }
+.mcard[data-status="warning"] { border-top-color: var(--status-warning); }
+.mcard[data-status="critical"] { border-top-color: var(--status-critical); }
+.mcard-head { display: flex; align-items: center; justify-content: space-between; gap: .5em; min-width: 0; font-weight: 600; font-size: var(--font-size-body); }
+.mcard-label { display: flex; align-items: center; gap: .4em; min-width: 0; }
+.mcard-label span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mcard-ytd { color: var(--app-muted); font-weight: 400; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.mcard-ytd b { color: var(--app-text); }
+.mcard-value { display: flex; align-items: baseline; flex-wrap: wrap; gap: .3em .5em; font-variant-numeric: tabular-nums; }
+.mcard-value b { font-size: max(var(--font-size-body), 2em); line-height: 1.05; }
+.mcard-value small { color: var(--app-muted); font-size: var(--font-size-body); }
+.mcard-target { color: var(--app-muted); font-size: var(--font-size-body); }
+.mcard-chart { flex: 1; min-height: 2.5em; display: flex; }
+.mcard-months { display: flex; gap: .12em; color: var(--app-muted); font-size: var(--font-size-body); }
+.mcard-months > span { flex: 1; text-align: center; }
+@container wx (max-width: 26em) { .mgrid { grid-template-columns: minmax(0, 1fr); } }
+@container wx (max-height: 12em) { .mcard-chart, .mcard-months, .mcard-target { display: none; } }
 .single { display: flex; flex-direction: column; justify-content: space-around; gap: .5em; min-height: 0; }
 .single-main { display: flex; align-items: center; gap: .6em; flex-wrap: wrap; }
-.single-icon { font-size: 1.6em; display: inline-flex; }
-.single-target, .single-progress small { color: var(--app-muted); font-size: .78em; }
+.single-icon { font-size: max(var(--font-size-body), 1.5em); display: inline-flex; }
+.single-target, .single-progress small { color: var(--app-muted); font-size: var(--font-size-body); }
 .single .minibars { flex: 1; max-height: 4em; min-height: 1.5em; }
 .single-progress { display: grid; gap: .3em; }
-@container wx (max-height: 11em) { .single .minibars { display: none; } .bignum-xl .bignum-value { font-size: 2.3em; } }
+@container wx (max-height: 11em) { .single .minibars { display: none; } .bignum-xl .bignum-value { font-size: max(var(--font-size-body), 2.25em); } }

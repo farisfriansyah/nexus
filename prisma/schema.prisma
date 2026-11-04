@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
 }
 
 enum LayoutStatus {
@@ -25,4 +25,23 @@ model LayoutVersion {
 
   @@unique([tab, version])
   @@index([tab, status])
+}
+
+/// Profil layout TV bersama; satu profil menyimpan layout untuk setiap tab.
+model TvLayoutProfile {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique @db.VarChar(100)
+  layouts   Json
+  createdBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// Ambang status bersama untuk satu indikator; nilai bands mengikuti BandDef.
+model IndicatorThreshold {
+  key       String   @id @db.VarChar(191)
+  bands     Json
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

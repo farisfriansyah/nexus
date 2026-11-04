@@ -58,6 +58,19 @@ export function TrendChart({ points, bands, domain, kind = "line", unit = "", fo
             <rect key={index} x={x(index) - step * 0.3} width={step * 0.6} y={y(point.value)} height={Math.max(1, y(lo) - y(point.value))} rx="2" fill="var(--app-accent)" opacity={0.9} />
           ))
         : <path d={path} fill="none" stroke="var(--app-accent)" strokeWidth="2" strokeLinejoin="round" />}
+      {kind === "bar" && (() => {
+        const pts = points.flatMap((point, index) => point.value === null ? [] : [[index, point.value] as const]);
+        if (pts.length < 3) return null;
+        const n = pts.length;
+        const sx = pts.reduce((s, [i]) => s + i, 0);
+        const sy = pts.reduce((s, [, v]) => s + v, 0);
+        const denom = n * pts.reduce((s, [i]) => s + i * i, 0) - sx * sx;
+        if (denom === 0) return null;
+        const slope = (n * pts.reduce((s, [i, v]) => s + i * v, 0) - sx * sy) / denom;
+        const intercept = (sy - slope * sx) / n;
+        const [first, last] = [pts[0]![0], pts[n - 1]![0]];
+        return <line x1={x(first)} x2={x(last)} y1={y(slope * first + intercept)} y2={y(slope * last + intercept)} stroke="var(--app-text)" strokeWidth="2" strokeDasharray="6 4" strokeLinecap="round"><title>Garis tren</title></line>;
+      })()}
       {points.map((point, index) => index % labelEvery === 0 && (
         <text key={index} x={x(index)} y={H - 8} textAnchor="middle" className="trend-axis">{point.label}</text>
       ))}

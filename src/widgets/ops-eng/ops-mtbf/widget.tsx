@@ -8,7 +8,7 @@ import { EventTimeline } from "@/widgets/_primitives/charts";
 import { StatusIcon } from "@/widgets/_primitives/status";
 import { WidgetCard, relativeAge } from "@/widgets/_primitives/widget-card";
 import type { WidgetProps } from "@/features/widgets-registry/types";
-import { useMtbf } from "./data";
+import { keys, useMtbf } from "./data";
 
 const DAY = 86_400_000;
 
@@ -16,7 +16,7 @@ export function Widget({ mode, widgetId, title }: WidgetProps) {
   const { payload } = useMtbf();
   const now = nowMs();
   return (
-    <WidgetCard mode={mode} widgetId={widgetId} title={title} subtitle="Kegagalan pada jendela pengamatan" status={payload ? aggregateStatus(payload.rows.map((row) => row.status)) : undefined} showBadge={mode === "analytic"} loading={!payload} updatedLabel={payload ? `diinput ${relativeAge(payload.updatedAt, now)}` : undefined} source="Jurnal harian" pic="Erwina" summary={payload?.rows.map((row) => `${row.label} ${row.count} kasus pada jendela ${row.windowDays} hari`).join("; ")}>
+    <WidgetCard mode={mode} widgetId={widgetId} title={title} indicatorKeys={keys} subtitle="Kegagalan pada jendela pengamatan" status={payload ? aggregateStatus(payload.rows.map((row) => row.status)) : undefined} showBadge={mode === "analytic"} loading={!payload} updatedLabel={payload ? `diinput ${relativeAge(payload.updatedAt, now)}` : undefined} source="Jurnal harian" pic="Erwina" summary={payload?.rows.map((row) => `${row.label} ${row.count} kasus pada jendela ${row.windowDays} hari`).join("; ")}>
       <ul className="mtbf">
         {payload?.rows.map((row) => (
           <li key={row.key} className="mtbf-row" data-status={row.status}>

@@ -1,9 +1,9 @@
 /* Angka & delta */
 .bignum { display: inline-flex; align-items: baseline; gap: .25em; font-variant-numeric: tabular-nums; }
 .bignum-value { font-weight: 700; line-height: 1; }
-.bignum-unit { color: var(--app-muted); font-size: .35em; }
-.bignum-xl .bignum-value { font-size: 3.2em; }
-.delta { font-size: .75em; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.bignum-unit { color: var(--app-muted); font-size: var(--font-size-body); }
+.bignum-xl .bignum-value { font-size: max(var(--font-size-body), 3em); }
+.delta { font-size: max(var(--font-size-body), .875em); font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .delta-good { color: var(--status-on-target); }
 .delta-bad { color: var(--status-critical); }
 .delta-neutral { color: var(--app-muted); }
@@ -39,7 +39,10 @@
 
 .progress-zone { position: absolute; top: 0; bottom: 0; opacity: .28; }
 .progress-marker { position: absolute; top: -.1em; bottom: -.1em; width: .18em; margin-left: -.09em; background: var(--app-text); border-radius: .1em; }
-.progress-over { position: absolute; right: .15em; top: 50%; transform: translateY(-50%); font-style: normal; font-size: .6em; color: var(--app-bg); }
+.progress-over { position: absolute; right: .15em; top: 50%; transform: translateY(-50%); font-style: normal; font-size: var(--font-size-body); color: var(--app-bg); }
 .heatstrip > span { display: grid; place-items: center; }
-.heatstrip > span > small { font-size: .7em; font-weight: 700; color: var(--app-bg); font-variant-numeric: tabular-nums; }
+.heatstrip > span > small { font-size: var(--font-size-body); font-weight: 700; color: var(--app-bg); font-variant-numeric: tabular-nums; }
 .heatstrip > span[data-status="no_data"] { background: repeating-linear-gradient(45deg, var(--app-border) 0 .2em, transparent .2em .4em); }
+.minibars-trend { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+.minibars-trend line { stroke: var(--app-text); stroke-width: 2; stroke-dasharray: 5 3; stroke-linecap: round; opacity: .85; }
+.mcard-chart .minibars { height: 100%; }

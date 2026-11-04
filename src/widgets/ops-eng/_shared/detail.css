@@ -1,7 +1,7 @@
 /* Isi drawer detail */
-.detail { display: grid; gap: 1.2rem; padding: .5rem 0 1rem; font-size: 13px; }
+.detail { display: grid; gap: 1rem; padding: .5rem 0 1rem; font-size: var(--font-size-body); }
 .detail-block { display: grid; gap: .7rem; padding-bottom: 1rem; border-bottom: 1px solid var(--app-border); }
-.detail-block h3 { display: flex; align-items: center; gap: .6rem; margin: 0; font-size: 15px; }
+.detail-block h3 { display: flex; align-items: center; gap: .6rem; margin: 0; font-size: var(--font-size-title); }
 .dmeta dl { display: grid; gap: .35rem; margin: 0; }
 .dmeta dl > div { display: grid; grid-template-columns: 7rem 1fr; gap: .6rem; }
 .dmeta dt, .dstats dt { color: var(--app-muted); }

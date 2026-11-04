@@ -39,12 +39,18 @@ describe("layout resolver", () => {
       period: "", source: "", pic: null, updated_at: "2026-10-12T00:00:00.000Z", stale_after_sec: 0
     }).success).toBe(true);
   });
-  it("includes the per-phase monitor as its own Ops. Eng slide", () => {
-    const slide = tvLayouts["ops-eng"]?.slides.find((item) => item.id === "phase-monitor");
-    expect(slide?.items.map(({ widgetId }) => widgetId)).toEqual([
+  it("includes four identically arranged per-phase reactor slides", () => {
+    const slides = tvLayouts["ops-eng"]?.slides.filter((item) => item.id.startsWith("phase-monitor-reactor-"));
+    expect(slides?.map(({ title }) => title)).toEqual([
+      "Reaktor 1 · Panel Listrik · Per Fasa",
+      "Reaktor 2 · Panel Listrik · Per Fasa",
+      "Reaktor 3 · Panel Listrik · Per Fasa",
+      "Reaktor 4 · Panel Listrik · Per Fasa"
+    ]);
+    expect(slides?.map(({ items }) => items.map(({ widgetId }) => widgetId))).toEqual(Array(4).fill([
       "ops-phase-r", "ops-phase-s", "ops-phase-t",
       "ops-phase-current", "ops-phase-voltage", "ops-cos-total"
-    ]);
-    expect(slide?.rows).toBe(5);
+    ]));
+    expect(slides?.every(({ rows }) => rows === 5)).toBe(true);
   });
 });

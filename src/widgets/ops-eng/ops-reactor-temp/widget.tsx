@@ -56,7 +56,7 @@ function ReactorChart({ keyName }: { keyName: string }) {
 export function Widget({ mode, widgetId, title }: WidgetProps) {
   const group = useLiveGroup(keys);
   return (
-    <WidgetCard mode={mode} widgetId={widgetId} title={title} subtitle="Suhu reaktor" status={group.ready ? group.status : undefined} showBadge={mode === "analytic"} loading={!group.ready} stale={group.stale} updatedLabel={group.updatedLabel} source="Plant Vision" pic={group.pic} summary={group.summary}>
+    <WidgetCard mode={mode} widgetId={widgetId} title={title} indicatorKeys={keys} subtitle="Suhu reaktor" status={group.ready ? group.status : undefined} showBadge={mode === "analytic"} loading={!group.ready} stale={group.stale} updatedLabel={group.updatedLabel} source="Plant Vision" pic={group.pic} summary={group.summary}>
       <div className="rt-grid-2x2">
         {keys.map((key) => <ReactorChart key={key} keyName={key} />)}
       </div>

@@ -41,7 +41,7 @@ export function Widget({ mode, widgetId, title }: WidgetProps) {
   const needle = value === null ? null : point(frac(value), R_OUT - 4);
 
   return (
-    <WidgetCard mode={mode} widgetId={widgetId} title={title} subtitle="Boiler MA4" status={group.ready ? group.status : undefined} showBadge={mode === "analytic"} loading={!group.ready} stale={group.stale} updatedLabel={group.updatedLabel} source="Plant Vision" pic={group.pic} summary={group.summary}>
+    <WidgetCard mode={mode} widgetId={widgetId} title={title} indicatorKeys={keys} subtitle="Kompressor MA4" status={group.ready ? group.status : undefined} showBadge={mode === "analytic"} loading={!group.ready} stale={group.stale} updatedLabel={group.updatedLabel} source="Plant Vision" pic={group.pic} summary={group.summary}>
       <div className="pg" data-status={status} style={{ padding: "160px" }}>
         <svg className="pg-svg" viewBox="0 0 200 150" role="img" aria-label={`Tekanan ${value === null ? "tidak ada data" : formatFixed(value, def.decimals)} ${def.unit}, ${STATUS_LABEL[status]}`}>
           {segments.map(({ band, from, to }, index) => (

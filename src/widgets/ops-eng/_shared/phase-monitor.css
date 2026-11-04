@@ -1,50 +1,69 @@
 .phase-card-content {
   display: grid;
   grid-template-rows: 1fr 1fr;
+  gap: .5em;
   height: 100%;
   min-height: 0;
+  border-left: .3em solid var(--phase-color);
+  padding-left: .7em;
 }
 
 .phase-card-reading {
   display: grid;
-  grid-template-rows: auto auto .3em;
-  align-content: center;
+  grid-template-rows: auto auto auto auto;
+  align-content: space-evenly;
   min-height: 0;
-  padding: .3em .15em;
+  padding: .2em 0;
 }
 
 .phase-card-reading + .phase-card-reading {
   border-top: 1px solid var(--app-border);
 }
 
+.phase-card-label {
+  display: flex;
+  align-items: center;
+  gap: .5em;
+  color: var(--app-muted);
+  font-size: var(--font-size-body);
+}
+
+.phase-card-label b {
+  color: var(--phase-color);
+  font-size: var(--font-size-body);
+}
+
+.phase-card-label > span { flex: 1; }
+
 .phase-card-reading strong {
-  overflow: hidden;
+  display: flex;
+  align-items: baseline;
+  gap: .2em;
+  padding: .1em 0;
   color: var(--app-text);
   font-family: var(--font-mono, ui-monospace, monospace);
-  font-size: clamp(1.2em, 2.1vw, 2.5em);
+  font-size: max(var(--font-size-body), min(9cqw, 2em));
   font-variant-numeric: tabular-nums;
-  line-height: 1.1;
-  text-overflow: ellipsis;
+  line-height: 1.25;
   white-space: nowrap;
 }
 
 .phase-card-reading strong small {
   color: var(--app-muted);
-  font-size: .48em;
+  font-size: var(--font-size-body);
 }
 
-.phase-card-reading > span {
-  overflow: hidden;
+.phase-card-scale {
+  display: flex;
+  justify-content: space-between;
   color: var(--app-muted);
-  font-size: .72em;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-size: var(--font-size-body);
+  font-variant-numeric: tabular-nums;
 }
 
 .phase-card-meter {
   position: relative;
-  align-self: end;
-  height: .28em;
+  height: .5em;
   overflow: hidden;
   border-radius: 99px;
   background: var(--app-surface-raised);
@@ -61,6 +80,10 @@
 
 .phase-card-meter.s-no_data::after {
   background: var(--status-no-data);
+}
+
+@container wx (max-height: 14em) {
+  .phase-card-scale { display: none; }
 }
 
 .phase-trend {
@@ -82,7 +105,7 @@
 .phase-trend-heading > strong {
   overflow: hidden;
   color: var(--app-text);
-  font-size: .85em;
+  font-size: 1rem;
   font-variant-numeric: tabular-nums;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -94,7 +117,7 @@
   min-width: 0;
   overflow: hidden;
   color: var(--app-muted);
-  font-size: .67em;
+  font-size: 1rem;
 }
 
 .phase-trend-legend span {
@@ -133,7 +156,7 @@
 .phase-trend-axis {
   fill: var(--app-muted);
   font-family: inherit;
-  font-size: 10px;
+  font-size: var(--font-size-body);
 }
 
 .phase-trend-axis {
@@ -150,10 +173,10 @@
 @media (max-width: 760px) {
   .phase-trend-legend {
     gap: .25em;
-    font-size: .58em;
+    font-size: var(--font-size-body);
   }
 
   .phase-trend-heading > strong {
-    font-size: .7em;
+    font-size: var(--font-size-body);
   }
 }

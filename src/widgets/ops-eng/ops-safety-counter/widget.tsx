@@ -10,7 +10,7 @@ import { useSafety } from "./data";
 export function Widget({ mode, widgetId, title }: WidgetProps) {
   const { payload } = useSafety();
   return (
-    <WidgetCard mode={mode} widgetId={widgetId} title={title} subtitle="Zero accident" status={payload?.status} showBadge={mode === "analytic"} loading={!payload} updatedLabel={payload ? `diinput ${relativeAge(payload.updatedAt, nowMs())}` : undefined} source="Jurnal harian" pic="Usman" summary={payload ? `${payload.daysSince ?? "tidak diketahui"} hari tanpa kecelakaan, kasus bulan ini ${payload.casesThisMonth ?? "tidak ada data"}, target 0` : undefined}>
+    <WidgetCard mode={mode} widgetId={widgetId} title={title} indicatorKeys={["k3.kecelakaan"]} subtitle="Zero accident" status={payload?.status} showBadge={mode === "analytic"} loading={!payload} updatedLabel={payload ? `diinput ${relativeAge(payload.updatedAt, nowMs())}` : undefined} source="Jurnal harian" pic="Usman" summary={payload ? `${payload.daysSince ?? "tidak diketahui"} hari tanpa kecelakaan, kasus bulan ini ${payload.casesThisMonth ?? "tidak ada data"}, target 0` : undefined}>
       {payload && (
         <div className="safety" data-status={payload.status}>
           <span className="safety-icon"><StatusIcon status={payload.status} /></span>

@@ -58,6 +58,15 @@ export interface MonitoredUnit { id: string; label: string; status: Status; pic:
 
 const compressorNames = ["sullair", "boge", "kobelco", "hitachi"];
 
+export function buildCriticalIndicatorAlerts(readings: Record<string, LiveReading>, statuses: Record<string, Status>): MonitoredUnit[] {
+  return Object.entries(readings).flatMap(([key, reading]) => {
+    if (statuses[key] !== "critical") return [];
+    const def = getIndicator(key);
+    const valueText = reading.value === null ? undefined : `${formatFixed(reading.value, def.decimals)} ${def.unit}`.trim();
+    return [{ id: `indicator:${key}`, label: def.name, status: "critical" as const, pic: def.pic, group: "Live Utility", valueText }];
+  });
+}
+
 /** Unit pantau = indikator × entitas; status = terburuk dari parameternya. */
 export function buildMonitoredUnits(dataset: OpsDataset, live: Record<string, LiveReading> | null, ctx: SelectContext, now = ctx.now, statuses?: Record<string, Status>): MonitoredUnit[] {
   const units: MonitoredUnit[] = [];
@@ -84,7 +93,7 @@ export function buildMonitoredUnits(dataset: OpsDataset, live: Record<string, Li
   for (const name of compressorNames) liveUnit(`compressor.${name}`, `Kompresor ${getIndicator(`compressor.${name}.temp`).name.split(" ")[1]}`, [`compressor.${name}.temp`, `compressor.${name}.pressure`], "Live Utility");
   for (const id of ["sb_ma1", "sb_ma4", "wb_ma1", "wb_ma4"]) liveUnit(`reactor.${id}`, `Reaktor ${id.replace("_", " ").toUpperCase()}`, [`reactor.${id}.temp`], "Live Utility");
 
-  const monthlyUnits = Object.keys(dataset.monthly).filter((key) => getIndicator(key).direction !== "NEUTRAL" && !key.startsWith("mtbf.") && key !== "k3.kecelakaan");
+  const monthlyUnits = Object.keys(dataset.monthly).filter((key) => getIndicator(key).bands.length > 0 && !key.startsWith("mtbf.") && key !== "k3.kecelakaan");
   for (const key of monthlyUnits) {
     const def = getIndicator(key);
     const row = buildMonthlyRow(key, dataset, ctx);

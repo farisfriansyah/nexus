@@ -40,12 +40,33 @@ export function Sparkline({ values, status = "neutral", domain, height = 100 }: 
   );
 }
 
-/** Batang mini 12 bulan; batang null = putus-putus. */
-export function MiniBars({ points, statusOf, target, highlightLast = true }: { points: { label: string; value: number | null }[]; statusOf: (value: number | null) => Status; target?: number | null; highlightLast?: boolean }) {
+/** Garis tren regresi linear (kuadrat terkecil) atas titik non-null; koordinat 0..100 (y dari bawah). */
+function trendSegment(values: (number | null)[], max: number) {
+  const pts = values.flatMap((value, index) => value === null ? [] : [[index, value] as const]);
+  if (pts.length < 3) return null;
+  const n = pts.length;
+  const sx = pts.reduce((sum, [i]) => sum + i, 0);
+  const sy = pts.reduce((sum, [, v]) => sum + v, 0);
+  const sxy = pts.reduce((sum, [i, v]) => sum + i * v, 0);
+  const sxx = pts.reduce((sum, [i]) => sum + i * i, 0);
+  const denom = n * sxx - sx * sx;
+  if (denom === 0) return null;
+  const slope = (n * sxy - sx * sy) / denom;
+  const intercept = (sy - slope * sx) / n;
+  const at = (index: number) => 100 - Math.min(100, Math.max(0, ((slope * index + intercept) / max) * 100));
+  const first = pts[0]![0];
+  const last = pts[n - 1]![0];
+  const x = (index: number) => ((index + 0.5) / values.length) * 100;
+  return { x1: x(first), y1: at(first), x2: x(last), y2: at(last) };
+}
+
+/** Batang mini 12 bulan dengan garis tren; batang null = putus-putus. */
+export function MiniBars({ points, statusOf, target, highlightLast = true, trend = true }: { points: { label: string; value: number | null }[]; statusOf: (value: number | null) => Status; target?: number | null; highlightLast?: boolean; trend?: boolean }) {
   const numeric = points.map((point) => point.value).filter((value): value is number => value !== null);
   const max = Math.max(...numeric, target ?? 0, 1) * 1.1;
+  const line = trend ? trendSegment(points.map((point) => point.value), max) : null;
   return (
-    <div className="minibars" role="img" aria-label="Tren 12 bulan">
+    <div className="minibars" role="img" aria-label="Tren 12 bulan dengan garis tren">
       {points.map((point, index) => {
         const status = statusOf(point.value);
         const last = highlightLast && index === points.length - 1;
@@ -56,6 +77,11 @@ export function MiniBars({ points, statusOf, target, highlightLast = true }: { p
         );
       })}
       {target !== null && target !== undefined && <span className="minibars-target" style={{ bottom: `${(target / max) * 100}%` }} aria-hidden="true" />}
+      {line && (
+        <svg className="minibars-trend" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+          <line {...line} vectorEffect="non-scaling-stroke" />
+        </svg>
+      )}
     </div>
   );
 }

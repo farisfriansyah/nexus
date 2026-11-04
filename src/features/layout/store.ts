@@ -1,10 +1,80 @@
 import { tvLayouts } from "@/config/layouts/seed";
+import { tabs } from "@/config/tabs";
 import { getDb } from "@/lib/db";
 import { packSlide } from "@/features/layout/resolver";
 import { tabLayoutSchema, type TabLayout } from "@/features/layout/schema";
+import type { Prisma } from "@/generated/prisma/client";
 
 export type LayoutSource = "default" | "published" | "draft";
 export type LoadedLayout = { layout: TabLayout; source: LayoutSource; version: number | null };
+export type TvLayoutProfileSummary = { id: number; name: string };
+export type TvLayoutProfile = TvLayoutProfileSummary & { layouts: Prisma.JsonValue };
+
+export async function listTvLayoutProfiles(): Promise<TvLayoutProfileSummary[]> {
+  return getDb().tvLayoutProfile.findMany({
+    select: { id: true, name: true },
+    orderBy: { name: "asc" }
+  });
+}
+
+export async function getTvLayoutProfile(id: number): Promise<TvLayoutProfile | null> {
+  return getDb().tvLayoutProfile.findUnique({
+    where: { id },
+    select: { id: true, name: true, layouts: true }
+  });
+}
+
+export function getLayoutFromProfile(profile: TvLayoutProfile, tab: string): TabLayout | null {
+  if (typeof profile.layouts !== "object" || profile.layouts === null || Array.isArray(profile.layouts)) return null;
+  const layout = profile.layouts[tab];
+  if (layout === undefined) return null;
+  const checked = validateLayout(layout, tab);
+  return checked.ok ? checked.layout : null;
+}
+
+export async function createTvLayoutProfile(name: string, user: string | null): Promise<TvLayoutProfileSummary> {
+  const layouts = Object.fromEntries(await Promise.all(tabs.map(async ({ slug }) => {
+    const loaded = await getPublishedLayout(slug);
+    const layout = loaded?.layout ?? tvLayouts[slug];
+    if (!layout) throw new Error(`Layout bawaan tidak ditemukan untuk tab "${slug}"`);
+    return [slug, layout];
+  })));
+  return getDb().tvLayoutProfile.create({
+    data: { name, createdBy: user, layouts: layouts as Prisma.InputJsonValue },
+    select: { id: true, name: true }
+  });
+}
+
+export async function renameTvLayoutProfile(id: number, name: string): Promise<TvLayoutProfileSummary | null> {
+  const existing = await getDb().tvLayoutProfile.findUnique({ where: { id }, select: { id: true } });
+  if (!existing) return null;
+  return getDb().tvLayoutProfile.update({
+    where: { id },
+    data: { name },
+    select: { id: true, name: true }
+  });
+}
+
+export async function saveProfileTabLayout(id: number, tab: string, layout: TabLayout): Promise<boolean> {
+  const db = getDb();
+  const profile = await db.tvLayoutProfile.findUnique({ where: { id }, select: { layouts: true } });
+  if (!profile) return false;
+  if (typeof profile.layouts !== "object" || profile.layouts === null || Array.isArray(profile.layouts)) {
+    throw new Error(`Profil layout ${id} memiliki format layout yang tidak valid`);
+  }
+  await db.tvLayoutProfile.update({
+    where: { id },
+    data: {
+      layouts: { ...profile.layouts, [tab]: layout } as Prisma.InputJsonValue
+    }
+  });
+  return true;
+}
+
+export async function deleteTvLayoutProfile(id: number): Promise<boolean> {
+  const result = await getDb().tvLayoutProfile.deleteMany({ where: { id } });
+  return result.count > 0;
+}
 
 /** Menolak layout yang widget-nya tidak muat pada grid slide (agar tidak terpotong di TV). */
 export function validateLayout(input: unknown, tab: string): { ok: true; layout: TabLayout } | { ok: false; error: string } {
