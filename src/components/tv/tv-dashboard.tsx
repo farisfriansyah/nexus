@@ -1,16 +1,18 @@
 "use client";
 
 import useEmblaCarousel from "embla-carousel-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { packSlide, resolveLayout } from "@/features/layout/resolver";
 import { GRID_COLS } from "@/features/layout/schema";
-import type { TabLayout } from "@/features/layout/schema";
+import type { Slide, TabLayout } from "@/features/layout/schema";
 import { getWidget } from "@/features/widgets-registry/registry";
 import { WidgetBoundary } from "@/components/widgets/widget-boundary";
 import { TvControls } from "@/components/tv/tv-controls";
 import { usePreferences } from "@/features/preferences/preferences-provider";
 import { usePathname, useRouter } from "next/navigation";
 import { useLiveStream } from "@/lib/sse/use-live-stream";
+import { TravoSlideProvider } from "@/features/travo/provider";
+import { mountedSlideIndices } from "@/components/tv/slide-window";
 
 const NO_HIDDEN: string[] = [];
 
@@ -27,6 +29,8 @@ export function TvDashboard({ layout, tab, profileId, debug, heartbeatReloadMinu
   const emblaOptions = useMemo(() => ({ loop: slides.length > 1, duration: 35 }), [slides.length]);
   const [emblaRef, emblaApi] = useEmblaCarousel(emblaOptions);
   const [selected, setSelected] = useState(0);
+  const [visibleSlides, setVisibleSlides] = useState<number[]>([0]);
+  const mountedSlides = useMemo(() => mountedSlideIndices(slides.length, selected, visibleSlides), [slides.length, selected, visibleSlides]);
   const activeSlide = slides[selected] ?? slides[0];
   const [progress, setProgress] = useState(0);
   const [pausedByUser, setPausedByUser] = useState(false);
@@ -42,10 +46,22 @@ export function TvDashboard({ layout, tab, profileId, debug, heartbeatReloadMinu
   useEffect(() => {
     if (!emblaApi) return;
     const update = () => setSelected(emblaApi.selectedScrollSnap());
+    const updateVisible = () => {
+      const visible = emblaApi.slidesInView();
+      setVisibleSlides((previous) => previous.length === visible.length && previous.every((index, i) => index === visible[i]) ? previous : visible);
+    };
     emblaApi.on("select", update);
     emblaApi.on("reInit", update);
+    emblaApi.on("slidesInView", updateVisible);
+    emblaApi.on("reInit", updateVisible);
     update();
-    return () => { emblaApi.off("select", update); emblaApi.off("reInit", update); };
+    updateVisible();
+    return () => {
+      emblaApi.off("select", update);
+      emblaApi.off("reInit", update);
+      emblaApi.off("slidesInView", updateVisible);
+      emblaApi.off("reInit", updateVisible);
+    };
   }, [emblaApi]);
 
   useEffect(() => {
@@ -155,29 +171,17 @@ export function TvDashboard({ layout, tab, profileId, debug, heartbeatReloadMinu
             <section className="tv-slide is-active"><div className="empty-slides">Semua widget pada tab ini disembunyikan.</div></section>
           )}
           {slides.map((slide, slideIndex) => (
-            <section className={`tv-slide ${slideIndex === selected ? "is-active" : ""}`} aria-label={slide.title} key={slide.id}>
-              <div className="slide-grid" style={{ gridTemplateColumns: `repeat(${GRID_COLS}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${slide.rows}, minmax(0, 1fr))` }}>
-                {packSlide(slide.items, slide.rows).placed.map((item) => {
-                  const widget = getWidget(item.widgetId);
-                  const position = { gridColumn: `${item.x + 1} / span ${item.w}`, gridRow: `${item.y + 1} / span ${item.h}` };
-                  if (!widget) return <div className="empty-widget" key={item.widgetId} style={position}>Widget &quot;{item.widgetId}&quot; belum tersedia</div>;
-                  const Widget = widget.component;
-                  return (
-                    <div className="widget-cell" key={item.widgetId} style={position} data-widget-id={widget.id} data-debug={debug ? "true" : undefined}>
-                      {debug && <span className="debug-label">{widget.id}</span>}
-                      <WidgetBoundary widgetName={widget.title}>
-                        <Widget mode="tv" widgetId={widget.id} title={widget.title} />
-                      </WidgetBoundary>
-                      {debug && <span className="debug-size" data-size-for={widget.id}>-- × --</span>}
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
+            <TvSlide
+              key={slide.id}
+              slide={slide}
+              active={slideIndex === selected}
+              mounted={mountedSlides.has(slideIndex)}
+              debug={debug}
+            />
           ))}
         </div>
       </div>
-      {debug && <DebugSizer />}
+      {debug && <DebugSizer slides={slides} selected={selected} visibleSlides={visibleSlides} />}
       <TvControls
         selected={selected}
         slideCount={slides.length}
@@ -191,6 +195,37 @@ export function TvDashboard({ layout, tab, profileId, debug, heartbeatReloadMinu
   );
 }
 
+const TvSlide = memo(function TvSlide({ slide, active, mounted, debug }: {
+  slide: Slide; active: boolean; mounted: boolean; debug: boolean;
+}) {
+  const placed = useMemo(() => mounted ? packSlide(slide.items, slide.rows).placed : [], [mounted, slide]);
+  return (
+    <section className={`tv-slide ${active ? "is-active" : ""}`} aria-label={slide.title}>
+      {mounted && (
+        <TravoSlideProvider slideId={slide.id}>
+          <div className="slide-grid" style={{ gridTemplateColumns: `repeat(${GRID_COLS}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${slide.rows}, minmax(0, 1fr))` }}>
+            {placed.map((item) => {
+              const widget = getWidget(item.widgetId);
+              const position = { gridColumn: `${item.x + 1} / span ${item.w}`, gridRow: `${item.y + 1} / span ${item.h}` };
+              if (!widget) return <div className="empty-widget" key={item.widgetId} style={position}>Widget &quot;{item.widgetId}&quot; belum tersedia</div>;
+              const Widget = widget.component;
+              return (
+                <div className="widget-cell" key={item.widgetId} style={position} data-widget-id={widget.id} data-debug={debug ? "true" : undefined}>
+                  {debug && <span className="debug-label">{widget.id}</span>}
+                  <WidgetBoundary widgetName={widget.title}>
+                    <Widget mode="tv" widgetId={widget.id} title={widget.title} />
+                  </WidgetBoundary>
+                  {debug && <span className="debug-size" data-size-for={widget.id}>-- × --</span>}
+                </div>
+              );
+            })}
+          </div>
+        </TravoSlideProvider>
+      )}
+    </section>
+  );
+});
+
 function useReducedMotion() {
   const [reduced, setReduced] = useState(false);
   useEffect(() => {
@@ -203,7 +238,7 @@ function useReducedMotion() {
   return reduced;
 }
 
-function DebugSizer() {
+function DebugSizer({ slides, selected, visibleSlides }: { slides: Slide[]; selected: number; visibleSlides: number[] }) {
   useEffect(() => {
     const update = () => document.querySelectorAll<HTMLElement>("[data-size-for]").forEach((label) => {
       const widgetId = label.dataset.sizeFor;
@@ -214,6 +249,6 @@ function DebugSizer() {
     const observer = new ResizeObserver(update);
     document.querySelectorAll("[data-widget-id]").forEach((element) => observer.observe(element));
     return () => observer.disconnect();
-  }, []);
+  }, [slides, selected, visibleSlides]);
   return <span className="debug-grid-label">Layout debug</span>;
 }

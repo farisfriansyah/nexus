@@ -7,8 +7,3 @@
 .rt-value b { font-size: max(var(--font-size-body), 1.5em); line-height: 1; }
 .rt-value small { font-size: var(--font-size-body); color: var(--app-muted); }
 .rt-plot { position: relative; flex: 1; min-height: 0; margin-left: 2.4em; }
-.rt-plot svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-.rt-grid { stroke: var(--app-border); stroke-width: 1; stroke-dasharray: 3 3; }
-.rt-axis { position: absolute; left: -2.4em; width: 2em; text-align: right; font-size: var(--font-size-body); line-height: 1; transform: translateY(-50%); color: var(--app-muted); }
-.rt-axis-top { top: 0; }
-.rt-axis-bottom { top: 100%; }

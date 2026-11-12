@@ -1,2 +1,1 @@
-.trend { width: 100%; height: auto; }
-.trend-axis { fill: var(--app-muted); font-size: var(--font-size-body); }
+.trend { width: 100%; height: 240px; }

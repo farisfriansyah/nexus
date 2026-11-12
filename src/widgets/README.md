@@ -20,11 +20,13 @@ src/widgets/
 
 Widget yang hanya merangkai komponen bersama (mis. daftar bulanan `MonthlyListWidget`, tile live) cukup berisi `widget.tsx` + `index.ts`; gayanya ada di `_shared/*.css`.
 
-## Panel listrik per fasa
+## Panel listrik Travo
 
-Tab Ops. Eng memiliki empat slide **Panel Listrik · Per Fasa** untuk Reaktor 1–4. Tiap slide menampilkan enam widget yang sama: kartu Fasa 1/L1, Fasa 2/L2, Fasa 3/L3, grafik Arus Fasa, Tegangan Fasa, dan Cos Total. Presentasi dibagikan melalui `_shared/phase-monitor.tsx` dan `phase-monitor.css`; tiap widget tetap didaftarkan sendiri di registry dan layout.
+Tab Ops. Eng memiliki empat slide **Panel Listrik · Per Fasa** untuk Travo 1–4. Tiap slide mempertahankan enam widget dan susunan fase yang sama: Fasa 1/L1, Fasa 2/L2, Fasa 3/L3, Arus Fasa, Tegangan Fasa, dan Cos Total. Sumbernya mengambil port dari `tcp_configs.listenerApiPort` untuk `tipe = 'TRAVO'` lalu membaca `/travo` Plant Vision. Nilai widget berasal dari `processedWeight`; detail tiap widget menampilkan nilai mentah `rawWeight` dan nilai terolah. Data diperbarui setiap 5 detik dan ditandai usang bila timestamp API lebih dari 30 detik. Grafik realtime memakai data dalam jendela bergulir maksimal 12 jam.
 
-Nilainya saat ini simulasi realtime dari `mocks/ops-eng/live.ts` dengan tick setiap 2 detik, bukan pembacaan panel aktual. Warna permukaan, teks, dan grid mengikuti token tema aplikasi agar tetap terbaca di tema terang maupun gelap.
+Slide TV dan Analitik membagikan nomor Travo melalui `TravoSlideProvider`; implementasi visual tetap menggunakan widget fasa bersama di `_shared/phase-monitor.tsx`. Widget fase yang ditampilkan di luar slide Travo tetap memakai simulator `mocks/ops-eng/live.ts`.
+
+Setiap slide juga memuat widget energi (`energy`, `pt`, `pft`, `freq`, `dem`) dan ringkasan sistem (`Zpt`, `Zqt`, `Zst`, `imbalance`). Kartu setiap fase menampilkan `kw`, `pf`, dan `vl` (Q fase dalam kvar); mapping `vl` didasarkan pada kesesuaian jumlah ketiga fase dengan `Zqt` dalam contoh API dan perlu dikonfirmasi terhadap dokumentasi sumber. Data yang dipakai tetap `processedWeight`.
 
 ## Membuat widget baru
 
@@ -47,3 +49,4 @@ Susunan slide kini disimpan di MySQL/MariaDB (Prisma) dan diedit lewat UI: **Ana
 
 - Model: tiap slide = grid 12 kolom � 1-6 baris; widget punya lebar (� ? � ? Penuh) dan tinggi (baris). Ruang kosong diisi widget berikutnya (dense); layout yang tidak muat ditolak.
 - Setup DB: isi `DATABASE_URL` MySQL di `.env.local`, lalu `pnpm db:migrate` (`pnpm db:deploy` di server).
+- Koneksi MySQL memakai `connectTimeout=5000` ms bila tidak ditentukan di `DATABASE_URL`; parameter URL yang ditentukan sendiri tetap dipakai. Pool tetap melaporkan kegagalan jika server atau jaringan tidak terjangkau.

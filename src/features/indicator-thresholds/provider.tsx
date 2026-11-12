@@ -16,16 +16,28 @@ export async function refreshIndicatorThresholds(): Promise<void> {
 export function IndicatorThresholdProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let active = true;
-    const refresh = () => {
-      void refreshIndicatorThresholds().catch((error: unknown) => {
-        if (active) console.error("[indicator-thresholds] Gagal memuat konfigurasi ambang", error);
-      });
+    let timer: number | undefined;
+    let failures = 0;
+
+    const refresh = async () => {
+      try {
+        await refreshIndicatorThresholds();
+        failures = 0;
+      } catch (error: unknown) {
+        if (!active) return;
+        if (failures === 0) console.error("[indicator-thresholds] Gagal memuat konfigurasi ambang", error);
+        failures += 1;
+      }
+
+      if (active) {
+        const delay = failures === 0 ? 60_000 : Math.min(60_000 * 2 ** (failures - 1), 5 * 60_000);
+        timer = window.setTimeout(() => void refresh(), delay);
+      }
     };
-    refresh();
-    const timer = window.setInterval(refresh, 15_000);
+    void refresh();
     return () => {
       active = false;
-      window.clearInterval(timer);
+      if (timer !== undefined) window.clearTimeout(timer);
     };
   }, []);
   return children;

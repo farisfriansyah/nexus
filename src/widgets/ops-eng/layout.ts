@@ -37,21 +37,29 @@ export const opsEngLayout: LegacyLayout = {
       { id: "governance-top", height: 1, columns: ["ops-kalibrasi", "ops-overtime"].map(col) },
       { id: "governance-bottom", height: 1, columns: ["ops-safety-counter", "ops-maintenance-cost"].map(col) }
     ] },
-    { id: "phase-monitor-reactor-1", title: "Reaktor 1 · Panel Listrik · Per Fasa", rows: [
-      { id: "phase-values", height: 2, columns: ["ops-phase-r", "ops-phase-s", "ops-phase-t"].map(col) },
-      { id: "phase-trends", height: 3, columns: ["ops-phase-current", "ops-phase-voltage", "ops-cos-total"].map(col) }
+    { id: "travo-1", title: "Travo 1 · Panel Listrik · Per Fasa", rows: [
+      { id: "travo-1-energy", height: 1, columns: ["ops-travo-energy"].map(col) },
+      { id: "travo-1-values", height: 2, columns: ["ops-phase-r", "ops-phase-s", "ops-phase-t"].map(col) },
+      { id: "travo-1-trends", height: 2, columns: ["ops-phase-current", "ops-phase-voltage", "ops-cos-total"].map(col) },
+      { id: "travo-1-summary", height: 1, columns: ["ops-travo-summary"].map(col) }
     ] },
-    { id: "phase-monitor-reactor-2", title: "Reaktor 2 · Panel Listrik · Per Fasa", rows: [
-      { id: "phase-values-reactor-2", height: 2, columns: ["ops-phase-r", "ops-phase-s", "ops-phase-t"].map(col) },
-      { id: "phase-trends-reactor-2", height: 3, columns: ["ops-phase-current", "ops-phase-voltage", "ops-cos-total"].map(col) }
+    { id: "travo-2", title: "Travo 2 · Panel Listrik · Per Fasa", rows: [
+      { id: "travo-2-energy", height: 1, columns: ["ops-travo-energy"].map(col) },
+      { id: "travo-2-values", height: 2, columns: ["ops-phase-r", "ops-phase-s", "ops-phase-t"].map(col) },
+      { id: "travo-2-trends", height: 2, columns: ["ops-phase-current", "ops-phase-voltage", "ops-cos-total"].map(col) },
+      { id: "travo-2-summary", height: 1, columns: ["ops-travo-summary"].map(col) }
     ] },
-    { id: "phase-monitor-reactor-3", title: "Reaktor 3 · Panel Listrik · Per Fasa", rows: [
-      { id: "phase-values-reactor-3", height: 2, columns: ["ops-phase-r", "ops-phase-s", "ops-phase-t"].map(col) },
-      { id: "phase-trends-reactor-3", height: 3, columns: ["ops-phase-current", "ops-phase-voltage", "ops-cos-total"].map(col) }
+    { id: "travo-3", title: "Travo 3 · Panel Listrik · Per Fasa", rows: [
+      { id: "travo-3-energy", height: 1, columns: ["ops-travo-energy"].map(col) },
+      { id: "travo-3-values", height: 2, columns: ["ops-phase-r", "ops-phase-s", "ops-phase-t"].map(col) },
+      { id: "travo-3-trends", height: 2, columns: ["ops-phase-current", "ops-phase-voltage", "ops-cos-total"].map(col) },
+      { id: "travo-3-summary", height: 1, columns: ["ops-travo-summary"].map(col) }
     ] },
-    { id: "phase-monitor-reactor-4", title: "Reaktor 4 · Panel Listrik · Per Fasa", rows: [
-      { id: "phase-values-reactor-4", height: 2, columns: ["ops-phase-r", "ops-phase-s", "ops-phase-t"].map(col) },
-      { id: "phase-trends-reactor-4", height: 3, columns: ["ops-phase-current", "ops-phase-voltage", "ops-cos-total"].map(col) }
+    { id: "travo-4", title: "Travo 4 · Panel Listrik · Per Fasa", rows: [
+      { id: "travo-4-energy", height: 1, columns: ["ops-travo-energy"].map(col) },
+      { id: "travo-4-values", height: 2, columns: ["ops-phase-r", "ops-phase-s", "ops-phase-t"].map(col) },
+      { id: "travo-4-trends", height: 2, columns: ["ops-phase-current", "ops-phase-voltage", "ops-cos-total"].map(col) },
+      { id: "travo-4-summary", height: 1, columns: ["ops-travo-summary"].map(col) }
     ] },
     { id: "boiler-reactor", title: "Tekanan & Suhu Reaktor", rows: [
       { id: "pressure-reactor", height: 5, columns: ["ops-pressure-gauge", "ops-reactor-temp"].map(col) }

@@ -47,6 +47,60 @@ test("slide navigation supports keyboard and drag", async ({ page }) => {
   await expect(dots.nth(0)).toHaveAttribute("aria-current", "true");
 });
 
+test("TV only mounts nearby slides and restores distant slides when navigating", async ({ page }) => {
+  await page.goto("/tv/ops-eng");
+  await expect(page.getByTestId("tv-canvas")).toBeVisible();
+  const dots = page.getByRole("group", { name: "Pilih slide" }).getByRole("button");
+  const count = await dots.count();
+  test.skip(count < 8, "Requires at least eight slides in the published Ops. Eng layout");
+
+  const slides = page.locator(".tv-slide");
+  await expect(slides).toHaveCount(count);
+  await expect(slides.locator(".slide-grid")).toHaveCount(7);
+  for (let index = 0; index < count; index += 1) {
+    await expect(slides.nth(index).locator(".slide-grid")).toHaveCount(index <= 3 || index >= count - 3 ? 1 : 0);
+  }
+  const firstWidgets = await slides.nth(0).locator("[data-widget-id]").count();
+  expect(firstWidgets).toBeGreaterThan(0);
+
+  await dots.nth(Math.floor(count / 2)).click();
+  await expect(dots.nth(Math.floor(count / 2))).toHaveAttribute("aria-current", "true");
+  await expect(slides.nth(Math.floor(count / 2)).locator("[data-widget-id]").first()).toBeVisible();
+  await expect(slides.locator(".slide-grid")).toHaveCount(7, { timeout: 10_000 });
+  await expect(slides.nth(0).locator(".slide-grid")).toHaveCount(0);
+  const middle = Math.floor(count / 2);
+  for (let index = 0; index < count; index += 1) {
+    const distance = Math.min((index - middle + count) % count, (middle - index + count) % count);
+    await expect(slides.nth(index).locator(".slide-grid")).toHaveCount(distance <= 3 ? 1 : 0);
+  }
+
+  await dots.nth(0).click();
+  await expect(dots.nth(0)).toHaveAttribute("aria-current", "true");
+  await expect(slides.nth(0).locator("[data-widget-id]")).toHaveCount(firstWidgets);
+  await expect(slides.locator(".slide-grid")).toHaveCount(7, { timeout: 10_000 });
+});
+
+test("pressure gauge shows threshold zones and a live needle", async ({ page }) => {
+  await page.goto("/tv/ops-eng?scenario=normal");
+  await expect(page.getByTestId("tv-canvas")).toBeVisible();
+  const slides = page.locator(".tv-slide");
+  const index = await slides.evaluateAll((elements) => elements.findIndex((element) => element.getAttribute("aria-label") === "Tekanan & Suhu Reaktor"));
+  test.skip(index < 0, "Requires the pressure gauge slide in the published layout");
+  await page.getByRole("group", { name: "Pilih slide" }).getByRole("button").nth(index).click();
+  const gauge = slides.nth(index).locator('[data-widget-id="ops-pressure-gauge"] .pg-svg');
+  await expect(gauge).toBeVisible();
+  await expect(gauge.locator("path")).toHaveCount(5);
+  await expect(gauge.locator(".pg-needle")).toHaveCount(1);
+  await expect(gauge).toHaveAttribute("aria-label", /Tekanan .* bar/);
+
+  await page.goto("/tv/ops-eng?scenario=all-nodata");
+  await expect(page.getByTestId("tv-canvas")).toBeVisible();
+  await page.getByRole("group", { name: "Pilih slide" }).getByRole("button").nth(index).click();
+  await expect(gauge).toHaveAttribute("aria-label", /tidak ada data/i);
+  await expect(gauge.locator(".pg-needle")).toHaveCount(0);
+  await expect(gauge.locator("path")).toHaveCount(5);
+});
+
 test("autoplay advances slides and can be disabled", async ({ page }) => {
   await page.goto("/tv/plant-kpi");
   await page.getByRole("button", { name: "Pengaturan TV" }).click();

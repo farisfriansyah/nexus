@@ -8,6 +8,44 @@
   padding-left: .7em;
 }
 
+.phase-card-extended { grid-template-rows: 1fr 1fr auto; gap: .15em; }
+.phase-card-extended .phase-card-reading { padding: 0; }
+.phase-card-extended .phase-card-reading strong { font-size: max(var(--font-size-body), min(6cqw, 1.4em)); padding: 0; }
+.phase-card-extended .phase-card-scale { display: none; }
+.phase-card-extra { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .3em; border-top: 1px solid var(--app-border); padding-top: .25em; }
+.phase-card-extra > div { min-width: 0; display: flex; flex-direction: column; }
+.phase-card-extra strong { font-variant-numeric: tabular-nums; white-space: nowrap; font-size: var(--font-size-body); }
+.phase-card-extra span { color: var(--app-muted); font-size: var(--font-size-body); }
+.travo-overview { min-height: 0; display: flex; align-items: center; gap: 1em; }
+.travo-energy-value { display: flex; flex: 1; min-width: 0; flex-direction: column; }
+.travo-energy-value strong { font-size: clamp(1.2rem, 3cqw, 2.5rem); font-variant-numeric: tabular-nums; line-height: 1.05; }
+.travo-energy-value span, .travo-overview dt { color: var(--app-muted); font-size: var(--font-size-body); }
+.travo-overview dl { margin: 0; display: grid; gap: .25em 1em; }
+.travo-overview-energy dl { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.travo-overview-summary dl { width: 100%; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.travo-overview dl > div { min-width: 0; }
+.travo-overview dd { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.wx-analytic .phase-card-extended { min-height: 200px; }
+@media (max-width: 760px) { .travo-overview-energy dl, .travo-overview-summary dl { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+.wx-tv[data-widget="ops-travo-energy"],
+.wx-tv[data-widget="ops-travo-summary"] { gap: .15em; padding: .35em .85em; }
+.wx-tv[data-widget="ops-travo-energy"] .wx-title,
+.wx-tv[data-widget="ops-travo-summary"] .wx-title { font-size: var(--font-size-body); }
+.wx-tv[data-widget="ops-travo-energy"] .wx-foot,
+.wx-tv[data-widget="ops-travo-summary"] .wx-foot { display: none; }
+.wx-tv[data-widget="ops-travo-energy"] .travo-energy-value strong { font-size: clamp(1.1rem, 2cqw, 1.8rem); }
+.wx-tv[data-widget="ops-travo-energy"] .travo-overview dl { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.wx-tv[data-widget="ops-phase-r"] .phase-card-extended,
+.wx-tv[data-widget="ops-phase-s"] .phase-card-extended,
+.wx-tv[data-widget="ops-phase-t"] .phase-card-extended { grid-template-rows: minmax(0, 1fr) minmax(0, 1fr) auto; gap: .1em; }
+.wx-tv:has(.phase-card-extended) .wx-foot { display: none; }
+.wx-tv .phase-card-extended .phase-card-reading { grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto auto; align-content: center; column-gap: .3em; }
+.wx-tv .phase-card-extended .phase-card-reading strong { font-size: var(--font-size-body); }
+.wx-tv .phase-card-extended .phase-card-reading > .gauge,
+.wx-tv .phase-card-extended .phase-card-reading > .phase-card-meter { grid-column: 1 / -1; }
+.wx-tv .phase-card-extended .phase-card-extra { font-size: .9em; }
+
 .phase-card-reading {
   display: grid;
   grid-template-rows: auto auto auto auto;
@@ -133,42 +171,7 @@
   border-radius: 50%;
 }
 
-.phase-trend-svg {
-  display: block;
-  width: 100%;
-  height: 100%;
-  min-height: 0;
-  overflow: visible;
-}
-
-.phase-trend-grid {
-  stroke: var(--app-border);
-  stroke-width: 1;
-}
-
-.phase-trend-baseline {
-  stroke: var(--app-muted);
-  stroke-width: 1;
-}
-
-.phase-trend-label,
-.phase-trend-time,
-.phase-trend-axis {
-  fill: var(--app-muted);
-  font-family: inherit;
-  font-size: var(--font-size-body);
-}
-
-.phase-trend-axis {
-  font-weight: 600;
-}
-
-.phase-trend-line {
-  stroke-width: 2.5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  vector-effect: non-scaling-stroke;
-}
+.phase-trend-apex { overflow: visible; }
 
 @media (max-width: 760px) {
   .phase-trend-legend {

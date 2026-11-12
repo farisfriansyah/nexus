@@ -4,6 +4,8 @@ import "./widget.css";
 import { getIndicator } from "@/config/ops-eng/indicators";
 import { formatFixed } from "@/lib/format";
 import { STATUS_COLOR, StatusIcon } from "@/widgets/_primitives/status";
+import { ApexChart } from "@/widgets/_primitives/apex-chart";
+import type { ApexOptions } from "apexcharts";
 import { WidgetCard } from "@/widgets/_primitives/widget-card";
 import { LiveDetail } from "../_shared/detail";
 import { useLive } from "../_shared/data";
@@ -21,16 +23,27 @@ function ReactorChart({ keyName }: { keyName: string }) {
   const status: Status = live.statuses[keyName] ?? "no_data";
   const value = reading && status !== "no_data" ? reading.value : null;
   const [lo, hi] = def.domain!;
-  const y = (v: number) => 100 - ((Math.min(Math.max(v, lo), hi) - lo) / (hi - lo)) * 100;
-  const values = reading ? reading.trend.map((point) => point.v) : [];
-  let path = "";
-  let pen = false;
-  values.forEach((v, index) => {
-    if (v === null) { pen = false; return; }
-    path += `${pen ? "L" : "M"}${((index / Math.max(values.length - 1, 1)) * 100).toFixed(2)} ${y(v).toFixed(2)} `;
-    pen = true;
-  });
-  const lines = [...new Set(def.bands.flatMap((band) => [band.min, band.max]).filter((v): v is number => v !== null && v > lo && v < hi))];
+  const points = reading?.trend ?? [];
+  const series = [{ name: LABELS[keyName], data: points.map((point) => ({ x: point.t, y: point.v })) }];
+  const annotations = [...new Set(def.bands.flatMap((band) => [band.min, band.max]).filter((edge): edge is number => edge !== null && edge > lo && edge < hi))]
+    .map((edge) => ({ y: edge, borderColor: "var(--app-border)", strokeDashArray: 3 }));
+  const options: ApexOptions = {
+    colors: [STATUS_COLOR[status]],
+    stroke: { curve: "straight", width: 2 },
+    markers: { size: 0, hover: { size: 5 } },
+    dataLabels: { enabled: false },
+    xaxis: { type: "datetime", labels: { datetimeUTC: false, format: "HH:mm" }, axisBorder: { color: "var(--app-border)" }, axisTicks: { show: false } },
+    yaxis: { min: lo, max: hi, tickAmount: 3, labels: { formatter: (tick) => `${Number(tick).toFixed(def.decimals)}°` } },
+    grid: { borderColor: "var(--app-border)", padding: { left: 0, right: 4, top: 0, bottom: 0 } },
+    annotations: { yaxis: annotations },
+    tooltip: {
+      shared: false,
+      intersect: false,
+      x: { format: "dd MMM yyyy HH:mm:ss" },
+      y: { formatter: (point) => Number.isFinite(point) ? `${Number(point).toFixed(def.decimals)} ${def.unit}` : "Tidak ada data" }
+    },
+    noData: { text: "Belum ada riwayat" }
+  };
   return (
     <div className="rt-cell" data-status={status} data-key={keyName}>
       <div className="rt-head">
@@ -40,15 +53,7 @@ function ReactorChart({ keyName }: { keyName: string }) {
           <b>{value === null ? "–" : formatFixed(value, def.decimals)}</b><small>{def.unit}</small>
         </span>
       </div>
-      <div className="rt-plot">
-        <svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label={`Tren suhu ${LABELS[keyName]}`}>
-          {lines.map((line) => <line key={line} x1="0" x2="100" y1={y(line)} y2={y(line)} className="rt-grid" vectorEffect="non-scaling-stroke" />)}
-          <path d={path} fill="none" stroke={STATUS_COLOR[status]} strokeWidth="2" vectorEffect="non-scaling-stroke" strokeLinejoin="round" strokeLinecap="round" />
-        </svg>
-        <span className="rt-axis rt-axis-top">{hi}°</span>
-        {lines.map((line) => <span key={line} className="rt-axis" style={{ top: `${y(line)}%` }}>{line}°</span>)}
-        <span className="rt-axis rt-axis-bottom">{lo}°</span>
-      </div>
+      <ApexChart className="rt-plot" type="line" label={`Tren suhu ${LABELS[keyName]}`} series={series} options={options} />
     </div>
   );
 }

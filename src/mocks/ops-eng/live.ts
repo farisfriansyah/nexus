@@ -50,7 +50,7 @@ function specFor(key: string, scenario: Scenario): LiveSpec {
   return { base, noise };
 }
 
-export const TREND_POINTS = 60;
+export const TREND_POINTS = 12 * 60 + 1;
 export const TREND_STEP_MS = 60_000;
 export const TICK_MS = 2000;
 

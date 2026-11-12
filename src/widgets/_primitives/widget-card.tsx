@@ -41,6 +41,7 @@ export interface WidgetCardProps {
   updatedLabel?: string;
   /** Sumber data untuk footer, mis. "Plant Vision". */
   source?: string;
+  showDummyBadge?: boolean;
   /** Ringkasan untuk pembaca layar, mis. "MA1 32,5 °C, Normal". */
   summary?: string;
   /** Chip PIC, hanya tampil di mode analitik. */
@@ -50,7 +51,7 @@ export interface WidgetCardProps {
   children: ReactNode;
 }
 
-export function WidgetCard({ mode, title, subtitle, status, showBadge = false, loading, error, onRetry, stale, updatedLabel, source, summary, pic, widgetId, indicatorKeys = [], children }: WidgetCardProps) {
+export function WidgetCard({ mode, title, subtitle, status, showBadge = false, loading, error, onRetry, stale, updatedLabel, source, showDummyBadge = process.env.NODE_ENV !== "production", summary, pic, widgetId, indicatorKeys = [], children }: WidgetCardProps) {
   const forced = useContext(ForcedStateContext);
   const isAdmin = useIsAdmin();
   const [thresholdSettingsOpen, setThresholdSettingsOpen] = useState(false);
@@ -60,8 +61,7 @@ export function WidgetCard({ mode, title, subtitle, status, showBadge = false, l
   const [thresholdRequestId, setThresholdRequestId] = useState(0);
   const isLoading = forced === "loading" || loading;
   const errorMessage = forced === "error" ? "Gagal memuat data" : error;
-  const dummy = process.env.NODE_ENV !== "production";
-
+  const dummy = showDummyBadge;
   async function openThresholdSettings(open: boolean) {
     setThresholdSettingsOpen(open);
     if (!open) return;

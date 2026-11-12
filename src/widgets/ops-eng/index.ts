@@ -22,6 +22,8 @@ import { opsPressureGauge } from "./ops-pressure-gauge";
 import { opsReactorTemp } from "./ops-reactor-temp";
 import { opsSafetyCounter } from "./ops-safety-counter";
 import { opsStatusSummary } from "./ops-status-summary";
+import { opsTravoEnergy } from "./ops-travo-energy";
+import { opsTravoSummary } from "./ops-travo-summary";
 
 /** Daftar widget tab Ops. Eng — tambahkan widget baru di sini. */
 export const opsEngWidgets = [
@@ -30,5 +32,5 @@ export const opsEngWidgets = [
   opsDowntimeReaktor, opsDowntimePacking, opsDowntimeUtility, opsDowntimeVehicle,
   opsMttr, opsMtbf, opsKalibrasi, opsOvertime, opsMaintenanceCost,
   opsPressureGauge, opsReactorTemp,
-  opsPhaseR, opsPhaseS, opsPhaseT, opsPhaseCurrent, opsPhaseVoltage, opsCosTotal
+  opsPhaseR, opsPhaseS, opsPhaseT, opsPhaseCurrent, opsPhaseVoltage, opsCosTotal, opsTravoEnergy, opsTravoSummary
 ];

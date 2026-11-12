@@ -61,6 +61,8 @@ Admin dapat membuka **Preset layout** dari navbar TV untuk membuat, mengganti na
 - `pnpm test`, `pnpm typecheck`, `pnpm lint`, `pnpm test:e2e`, dan `pnpm build`.
 - Playwright menggunakan sesi viewer tiruan yang hanya aktif pada environment non-production melalui `AUTH_E2E_BYPASS`; jangan set variabel ini di deployment. Validasi Google OAuth live tetap perlu kredensial dan diuji manual di environment terkonfigurasi.
 
+Pada mode TV, widget dipasang untuk slide aktif dan tiga slide di setiap sisinya (maksimal tujuh saat carousel diam), termasuk melingkar dari slide terakhir ke pertama. Slide lain yang sedang terlihat selama transisi juga dipasang sementara; widget di luar jangkauan dilepas sampai diperlukan lagi. Ini menunda render dan pengambilan data widget, bukan seluruh JavaScript widget. Ukur LCP dan INP pada build production (`pnpm build` lalu `pnpm start`), karena kompilasi dan Fast Refresh pada `pnpm dev` dapat mendominasi hasil. Bandingkan reload dan interaksi pada tab, viewport, jaringan, dan throttling CPU yang sama.
+
 ## Checklist verifikasi manual
 
 - [ ] Login dengan email domain yang salah ditolak dan pesan domain ditampilkan.

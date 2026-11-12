@@ -39,18 +39,32 @@ describe("layout resolver", () => {
       period: "", source: "", pic: null, updated_at: "2026-10-12T00:00:00.000Z", stale_after_sec: 0
     }).success).toBe(true);
   });
-  it("includes four identically arranged per-phase reactor slides", () => {
-    const slides = tvLayouts["ops-eng"]?.slides.filter((item) => item.id.startsWith("phase-monitor-reactor-"));
+  it("includes energy, all phase widgets and system summary on each Travo slide", () => {
+    const slides = tvLayouts["ops-eng"]?.slides.filter((item) => item.id.startsWith("travo-"));
     expect(slides?.map(({ title }) => title)).toEqual([
-      "Reaktor 1 · Panel Listrik · Per Fasa",
-      "Reaktor 2 · Panel Listrik · Per Fasa",
-      "Reaktor 3 · Panel Listrik · Per Fasa",
-      "Reaktor 4 · Panel Listrik · Per Fasa"
+      "Travo 1 · Panel Listrik · Per Fasa",
+      "Travo 2 · Panel Listrik · Per Fasa",
+      "Travo 3 · Panel Listrik · Per Fasa",
+      "Travo 4 · Panel Listrik · Per Fasa"
     ]);
-    expect(slides?.map(({ items }) => items.map(({ widgetId }) => widgetId))).toEqual(Array(4).fill([
-      "ops-phase-r", "ops-phase-s", "ops-phase-t",
-      "ops-phase-current", "ops-phase-voltage", "ops-cos-total"
-    ]));
-    expect(slides?.every(({ rows }) => rows === 5)).toBe(true);
+    expect(slides?.map(({ items }) => items.map(({ widgetId }) => widgetId))).toEqual([
+      [
+        "ops-travo-energy", "ops-phase-r", "ops-phase-s", "ops-phase-t",
+        "ops-phase-current", "ops-phase-voltage", "ops-cos-total", "ops-travo-summary"
+      ],
+      [
+        "ops-travo-energy", "ops-phase-r", "ops-phase-s", "ops-phase-t",
+        "ops-phase-current", "ops-phase-voltage", "ops-cos-total", "ops-travo-summary"
+      ],
+      [
+        "ops-travo-energy", "ops-phase-r", "ops-phase-s", "ops-phase-t",
+        "ops-phase-current", "ops-phase-voltage", "ops-cos-total", "ops-travo-summary"
+      ],
+      [
+        "ops-travo-energy", "ops-phase-r", "ops-phase-s", "ops-phase-t",
+        "ops-phase-current", "ops-phase-voltage", "ops-cos-total", "ops-travo-summary"
+      ]
+    ]);
+    expect(slides?.every(({ rows }) => rows === 6)).toBe(true);
   });
 });

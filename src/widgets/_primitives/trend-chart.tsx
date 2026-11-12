@@ -1,10 +1,13 @@
 import "./trend-chart.css";
 import type { BandDef } from "@/widgets/ops-eng/schemas";
 import { STATUS_COLOR } from "./status";
+import { fitNumericDomain } from "./chart-scale";
+import { ApexChart } from "./apex-chart";
+import type { ApexOptions } from "apexcharts";
 
 export interface TrendPoint { label: string; value: number | null }
 
-/** Grafik SVG untuk drawer: zona band sebagai latar, garis/batang data, sumbu sederhana. */
+/** ApexCharts history view with value and category available on hover. */
 export function TrendChart({ points, bands, domain, kind = "line", unit = "", format = (v: number) => String(v), targetValue }: {
   points: TrendPoint[];
   bands?: BandDef[];
@@ -14,66 +17,74 @@ export function TrendChart({ points, bands, domain, kind = "line", unit = "", fo
   format?: (value: number) => string;
   targetValue?: number;
 }) {
-  const W = 640;
-  const H = 240;
-  const pad = { l: 44, r: 10, t: 10, b: 26 };
   const numeric = points.map((point) => point.value).filter((value): value is number => value !== null);
-  const lo = domain?.[0] ?? Math.min(0, ...numeric);
-  const hi = domain?.[1] ?? (Math.max(...numeric, targetValue ?? 0, 1) * 1.15);
-  const span = hi - lo || 1;
-  const innerW = W - pad.l - pad.r;
-  const innerH = H - pad.t - pad.b;
-  const y = (value: number) => pad.t + innerH - ((Math.min(Math.max(value, lo), hi) - lo) / span) * innerH;
-  const step = innerW / Math.max(points.length, 1);
-  const x = (index: number) => pad.l + step * index + step / 2;
-  const ticks = [0, 0.25, 0.5, 0.75, 1].map((fraction) => lo + span * fraction);
-  const labelEvery = Math.ceil(points.length / 8);
-
-  let path = "";
-  let pen = false;
-  if (kind === "line") {
-    points.forEach((point, index) => {
-      if (point.value === null) { pen = false; return; }
-      path += `${pen ? "L" : "M"}${x(index).toFixed(1)} ${y(point.value).toFixed(1)} `;
-      pen = true;
-    });
+  const [lo, hi] = fitNumericDomain([...numeric, targetValue], domain);
+  const regression = kind === "bar" ? regressionFor(points.map((point) => point.value)) : null;
+  const series: NonNullable<ApexOptions["series"]> = [{
+    name: unit ? `Nilai (${unit})` : "Nilai",
+    type: kind === "bar" ? "bar" : "line",
+    data: points.map((point) => ({ x: point.label, y: point.value }))
+  }];
+  const strokeWidths = [kind === "bar" ? 0 : 2];
+  if (regression) {
+    series.push({ name: "Tren", type: "line", data: points.map((point, index) => ({ x: point.label, y: point.value === null ? null : regression[index] ?? null })) });
+    strokeWidths.push(2);
   }
+  const options: ApexOptions = {
+    colors: regression ? ["var(--app-accent)", "var(--app-text)"] : ["var(--app-accent)"],
+    stroke: { width: strokeWidths, curve: "straight", dashArray: regression ? [0, 5] : 0 },
+    markers: { size: 3, hover: { size: 6 } },
+    plotOptions: { bar: { columnWidth: "56%", borderRadius: 2 } },
+    dataLabels: { enabled: false },
+    xaxis: {
+      type: "category",
+      tickAmount: Math.min(points.length, 8),
+      labels: { rotate: -25, trim: true, hideOverlappingLabels: true },
+      axisBorder: { color: "var(--app-border)" },
+      axisTicks: { show: false },
+      crosshairs: { show: true }
+    },
+    yaxis: {
+      min: lo,
+      max: hi,
+      tickAmount: 4,
+      labels: { formatter: (value) => format(Number(value)) }
+    },
+    grid: { borderColor: "var(--app-border)", padding: { left: 4, right: 8, top: 0, bottom: 0 } },
+    annotations: {
+      yaxis: [
+        ...(bands ?? []).map((band) => ({
+          y: band.min ?? lo,
+          y2: band.max ?? hi,
+          borderColor: "transparent",
+          fillColor: STATUS_COLOR[band.status],
+          opacity: 0.08
+        })),
+        ...(targetValue === undefined ? [] : [{ y: targetValue, borderColor: "var(--app-text)", strokeDashArray: 5 }])
+      ]
+    },
+    tooltip: {
+      shared: false,
+      intersect: false,
+      x: { formatter: (value) => String(value ?? "") },
+      y: { formatter: (value) => Number.isFinite(value) ? `${format(Number(value))}${unit ? ` ${unit}` : ""}` : "Tidak ada data" }
+    },
+    noData: { text: "Tidak ada data" }
+  };
+  return <ApexChart className="trend" type={kind} label={`Grafik tren ${unit}`} series={series} options={options} height={240} />;
+}
 
-  return (
-    <svg className="trend" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Grafik tren ${unit}`}>
-      {bands?.map((band, index) => {
-        const top = y(band.max ?? hi);
-        const bottom = y(band.min ?? lo);
-        return <rect key={index} x={pad.l} y={top} width={innerW} height={Math.max(0, bottom - top)} fill={STATUS_COLOR[band.status]} opacity={0.13} />;
-      })}
-      {ticks.map((tick) => (
-        <g key={tick}>
-          <line x1={pad.l} x2={W - pad.r} y1={y(tick)} y2={y(tick)} stroke="var(--app-border)" strokeWidth="1" />
-          <text x={pad.l - 6} y={y(tick) + 4} textAnchor="end" className="trend-axis">{format(Number(tick.toFixed(2)))}</text>
-        </g>
-      ))}
-      {targetValue !== undefined && <line x1={pad.l} x2={W - pad.r} y1={y(targetValue)} y2={y(targetValue)} stroke="var(--app-text)" strokeWidth="1.2" strokeDasharray="5 4" />}
-      {kind === "bar"
-        ? points.map((point, index) => point.value === null ? null : (
-            <rect key={index} x={x(index) - step * 0.3} width={step * 0.6} y={y(point.value)} height={Math.max(1, y(lo) - y(point.value))} rx="2" fill="var(--app-accent)" opacity={0.9} />
-          ))
-        : <path d={path} fill="none" stroke="var(--app-accent)" strokeWidth="2" strokeLinejoin="round" />}
-      {kind === "bar" && (() => {
-        const pts = points.flatMap((point, index) => point.value === null ? [] : [[index, point.value] as const]);
-        if (pts.length < 3) return null;
-        const n = pts.length;
-        const sx = pts.reduce((s, [i]) => s + i, 0);
-        const sy = pts.reduce((s, [, v]) => s + v, 0);
-        const denom = n * pts.reduce((s, [i]) => s + i * i, 0) - sx * sx;
-        if (denom === 0) return null;
-        const slope = (n * pts.reduce((s, [i, v]) => s + i * v, 0) - sx * sy) / denom;
-        const intercept = (sy - slope * sx) / n;
-        const [first, last] = [pts[0]![0], pts[n - 1]![0]];
-        return <line x1={x(first)} x2={x(last)} y1={y(slope * first + intercept)} y2={y(slope * last + intercept)} stroke="var(--app-text)" strokeWidth="2" strokeDasharray="6 4" strokeLinecap="round"><title>Garis tren</title></line>;
-      })()}
-      {points.map((point, index) => index % labelEvery === 0 && (
-        <text key={index} x={x(index)} y={H - 8} textAnchor="middle" className="trend-axis">{point.label}</text>
-      ))}
-    </svg>
-  );
+function regressionFor(values: readonly (number | null)[]): (number | null)[] | null {
+  const numeric = values.flatMap((value, index) => value === null ? [] : [[index, value] as const]);
+  if (numeric.length < 3) return null;
+  const n = numeric.length;
+  const sx = numeric.reduce((sum, [x]) => sum + x, 0);
+  const sy = numeric.reduce((sum, [, y]) => sum + y, 0);
+  const sxy = numeric.reduce((sum, [x, y]) => sum + x * y, 0);
+  const sxx = numeric.reduce((sum, [x]) => sum + x * x, 0);
+  const denominator = n * sxx - sx * sx;
+  if (!denominator) return null;
+  const slope = (n * sxy - sx * sy) / denominator;
+  const intercept = (sy - slope * sx) / n;
+  return values.map((value, index) => value === null ? null : slope * index + intercept);
 }

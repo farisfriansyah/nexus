@@ -39,11 +39,13 @@ export function Widget({ mode, widgetId, title }: WidgetProps) {
   const segments = [...def.bands].sort((a, b) => (a.min ?? -Infinity) - (b.min ?? -Infinity)).map((band) => ({ band, from: frac(band.min ?? lo), to: frac(band.max ?? hi) }));
   const edges = [...new Set(def.bands.flatMap((band) => [band.min, band.max]).filter((v): v is number => v !== null && v > lo && v < hi))].sort((a, b) => a - b).filter((edge, index, all) => index === 0 || frac(edge) - frac(all[index - 1]!) > 0.06);
   const needle = value === null ? null : point(frac(value), R_OUT - 4);
+  const label = `Tekanan ${value === null ? "tidak ada data" : formatFixed(value, def.decimals)} ${def.unit}, ${STATUS_LABEL[status]}`;
 
   return (
     <WidgetCard mode={mode} widgetId={widgetId} title={title} indicatorKeys={keys} subtitle="Kompressor MA4" status={group.ready ? group.status : undefined} showBadge={mode === "analytic"} loading={!group.ready} stale={group.stale} updatedLabel={group.updatedLabel} source="Plant Vision" pic={group.pic} summary={group.summary}>
-      <div className="pg" data-status={status} style={{ padding: "160px" }}>
-        <svg className="pg-svg" viewBox="0 0 200 150" role="img" aria-label={`Tekanan ${value === null ? "tidak ada data" : formatFixed(value, def.decimals)} ${def.unit}, ${STATUS_LABEL[status]}`}>
+      <div className="pg" data-status={status}>
+        <svg className="pg-svg" viewBox="0 0 200 150" role="img" aria-label={label}>
+          <title>{label}</title>
           {segments.map(({ band, from, to }, index) => (
             <path key={index} d={arc(from, to)} fill={STATUS_COLOR[band.status]} stroke="var(--app-surface)" strokeWidth="1" />
           ))}

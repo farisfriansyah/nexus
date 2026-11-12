@@ -28,14 +28,18 @@ export function Widget({ mode, widgetId, title }: WidgetProps) {
             </div>
           ))}
         </div>
-        <StackedStatusBar counts={counts} total={Math.max(units.length, 1)} />
-        <SegmentGrid items={units} />
+
+        <div className="group-chart">
+          <StackedStatusBar counts={counts} total={Math.max(units.length, 1)} />
+          <SegmentGrid items={units} />
+        </div>
         {ready && attention.length === 0 && <div className="summary-ok"><StatusIcon status="on_target" /><span>Semua unit normal</span></div>}
         {attention.length > 0 && (
           <ul className="summary-attn">
             {attention.map((unit) => <li key={unit.id} data-status={unit.status}><StatusIcon status={unit.status} /><span className="summary-name">{unit.label}</span>{unit.valueText && <b className="summary-val">{unit.valueText}</b>}<small className="summary-pic">{unit.pic}</small></li>)}
           </ul>
         )}
+
       </div>
     </WidgetCard>
   );

@@ -11,12 +11,7 @@
 /* Sparkline, bar, gauge */
 .spark { width: 100%; height: 100%; display: block; }
 .spark-empty { border-bottom: 1px dashed var(--app-border); }
-.minibars { position: relative; display: flex; align-items: flex-end; gap: .12em; height: 100%; min-height: 1.4em; width: 100%; }
-.minibar { flex: 1; height: 100%; display: flex; align-items: flex-end; }
-.minibar i { display: block; width: 100%; border-radius: .15em .15em 0 0; opacity: .55; }
-.minibar.is-last i { opacity: 1; }
-.minibar.is-null { border-bottom: 1px dashed var(--status-no-data); }
-.minibars-target { position: absolute; left: 0; right: 0; border-top: 1px dashed var(--app-muted); pointer-events: none; }
+.minibars { position: relative; height: 100%; min-height: 1.4em; width: 100%; }
 .gauge { width: 100%; padding: .25em 0; }
 .gauge-track { position: relative; height: .5em; border-radius: .3em; background: var(--app-border); overflow: visible; }
 .gauge-seg { position: absolute; top: 0; bottom: 0; opacity: .6; }
@@ -43,6 +38,4 @@
 .heatstrip > span { display: grid; place-items: center; }
 .heatstrip > span > small { font-size: var(--font-size-body); font-weight: 700; color: var(--app-bg); font-variant-numeric: tabular-nums; }
 .heatstrip > span[data-status="no_data"] { background: repeating-linear-gradient(45deg, var(--app-border) 0 .2em, transparent .2em .4em); }
-.minibars-trend { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
-.minibars-trend line { stroke: var(--app-text); stroke-width: 2; stroke-dasharray: 5 3; stroke-linecap: round; opacity: .85; }
 .mcard-chart .minibars { height: 100%; }

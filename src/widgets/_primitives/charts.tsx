@@ -2,6 +2,8 @@ import "./charts.css";
 import type { BandDef, Status } from "@/widgets/ops-eng/schemas";
 import { STATUS_COLOR, STATUS_LABEL } from "./status";
 import { Fragment } from "react";
+import { ApexChart } from "./apex-chart";
+import type { ApexOptions } from "apexcharts";
 
 export function BigNumber({ value, unit, status, size = "lg" }: { value: string; unit?: string; status?: Status; size?: "md" | "lg" | "xl" }) {
   return (
@@ -17,73 +19,74 @@ export function Delta({ text, tone, arrow }: { text: string; tone: "good" | "bad
   return <span className={`delta delta-${tone}`}><span aria-hidden="true">{symbol}</span> {text}</span>;
 }
 
-/** Sparkline SVG; stroke tidak ikut skala. */
+/** ApexCharts sparkline dengan nilai per titik pada tooltip. */
 export function Sparkline({ values, status = "neutral", domain, height = 100 }: { values: (number | null)[]; status?: Status; domain?: [number, number]; height?: number }) {
   const numeric = values.filter((value): value is number => value !== null);
   if (numeric.length < 2) return <div className="spark spark-empty" aria-hidden="true" />;
-  const lo = domain?.[0] ?? Math.min(...numeric);
-  const hi = domain?.[1] ?? Math.max(...numeric);
-  const span = hi - lo || 1;
-  const x = (index: number) => (index / (values.length - 1)) * 100;
-  const y = (value: number) => height - ((Math.min(Math.max(value, lo), hi) - lo) / span) * (height - 8) - 4;
-  let path = "";
-  let pen = false;
-  values.forEach((value, index) => {
-    if (value === null) { pen = false; return; }
-    path += `${pen ? "L" : "M"}${x(index).toFixed(2)} ${y(value).toFixed(2)} `;
-    pen = true;
-  });
-  return (
-    <svg className="spark" viewBox={`0 0 100 ${height}`} preserveAspectRatio="none" role="img" aria-label="Tren">
-      <path d={path} fill="none" stroke={STATUS_COLOR[status]} strokeWidth="2" vectorEffect="non-scaling-stroke" strokeLinejoin="round" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-/** Garis tren regresi linear (kuadrat terkecil) atas titik non-null; koordinat 0..100 (y dari bawah). */
-function trendSegment(values: (number | null)[], max: number) {
-  const pts = values.flatMap((value, index) => value === null ? [] : [[index, value] as const]);
-  if (pts.length < 3) return null;
-  const n = pts.length;
-  const sx = pts.reduce((sum, [i]) => sum + i, 0);
-  const sy = pts.reduce((sum, [, v]) => sum + v, 0);
-  const sxy = pts.reduce((sum, [i, v]) => sum + i * v, 0);
-  const sxx = pts.reduce((sum, [i]) => sum + i * i, 0);
-  const denom = n * sxx - sx * sx;
-  if (denom === 0) return null;
-  const slope = (n * sxy - sx * sy) / denom;
-  const intercept = (sy - slope * sx) / n;
-  const at = (index: number) => 100 - Math.min(100, Math.max(0, ((slope * index + intercept) / max) * 100));
-  const first = pts[0]![0];
-  const last = pts[n - 1]![0];
-  const x = (index: number) => ((index + 0.5) / values.length) * 100;
-  return { x1: x(first), y1: at(first), x2: x(last), y2: at(last) };
+  const options: ApexOptions = {
+    chart: { sparkline: { enabled: true } },
+    colors: [STATUS_COLOR[status]],
+    stroke: { curve: "straight", width: 2 },
+    markers: { size: 0, hover: { size: 5 } },
+    xaxis: { type: "numeric", labels: { show: false }, axisBorder: { show: false }, axisTicks: { show: false } },
+    yaxis: { min: domain?.[0], max: domain?.[1], labels: { show: false }, axisBorder: { show: false }, axisTicks: { show: false } },
+    grid: { show: false, padding: { left: 2, right: 2, top: 2, bottom: 2 } },
+    tooltip: { x: { formatter: (index) => `Sampel ${Number(index) + 1}` }, y: { formatter: (value) => Number.isFinite(value) ? String(value) : "–" } }
+  };
+  return <ApexChart className="spark" type="line" height={height} label="Tren realtime" series={[{ name: "Nilai", data: values.map((y, x) => ({ x, y })) }]} options={options} />;
 }
 
 /** Batang mini 12 bulan dengan garis tren; batang null = putus-putus. */
 export function MiniBars({ points, statusOf, target, highlightLast = true, trend = true }: { points: { label: string; value: number | null }[]; statusOf: (value: number | null) => Status; target?: number | null; highlightLast?: boolean; trend?: boolean }) {
-  const numeric = points.map((point) => point.value).filter((value): value is number => value !== null);
-  const max = Math.max(...numeric, target ?? 0, 1) * 1.1;
-  const line = trend ? trendSegment(points.map((point) => point.value), max) : null;
-  return (
-    <div className="minibars" role="img" aria-label="Tren 12 bulan dengan garis tren">
-      {points.map((point, index) => {
-        const status = statusOf(point.value);
-        const last = highlightLast && index === points.length - 1;
-        return (
-          <span key={point.label + index} className={`minibar ${last ? "is-last" : ""} ${point.value === null ? "is-null" : ""}`} title={point.label}>
-            <i style={{ height: point.value === null ? "12%" : `${Math.max(4, (point.value / max) * 100)}%`, background: point.value === null ? "transparent" : STATUS_COLOR[status] }} />
-          </span>
-        );
-      })}
-      {target !== null && target !== undefined && <span className="minibars-target" style={{ bottom: `${(target / max) * 100}%` }} aria-hidden="true" />}
-      {line && (
-        <svg className="minibars-trend" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-          <line {...line} vectorEffect="non-scaling-stroke" />
-        </svg>
-      )}
-    </div>
-  );
+  const colors = points.map((point, index) => highlightLast && index === points.length - 1 && point.value !== null
+    ? STATUS_COLOR[statusOf(point.value)]
+    : point.value === null ? "var(--app-border)" : STATUS_COLOR[statusOf(point.value)]);
+  const numeric = points.map((point) => point.value);
+  const regression = trend ? regressionValues(numeric) : null;
+  const series: NonNullable<ApexOptions["series"]> = [{
+    name: "Nilai",
+    type: "column",
+    data: points.map((point) => ({ x: point.label, y: point.value }))
+  }];
+  const strokeWidths = [0];
+  if (regression) {
+    series.push({ name: "Tren", type: "line", data: points.map((point, index) => ({ x: point.label, y: point.value === null ? null : regression[index] ?? null })) });
+    strokeWidths.push(2);
+  }
+  const options: ApexOptions = {
+    chart: { type: "line", sparkline: { enabled: true } },
+    colors: regression ? [({ dataPointIndex }) => colors[dataPointIndex] ?? STATUS_COLOR.neutral, "var(--app-text)"] : [({ dataPointIndex }) => colors[dataPointIndex] ?? STATUS_COLOR.neutral],
+    stroke: { width: strokeWidths, curve: "straight", dashArray: regression ? [0, 5] : 0 },
+    markers: { size: regression ? [0, 0] : 0, hover: { size: 4 } },
+    plotOptions: { bar: { columnWidth: "56%", distributed: true } },
+    dataLabels: { enabled: false },
+    xaxis: { type: "category", labels: { show: false }, axisBorder: { show: false }, axisTicks: { show: false }, crosshairs: { show: true } },
+    yaxis: { labels: { show: false }, axisBorder: { show: false }, axisTicks: { show: false } },
+    grid: { show: false, padding: { left: 3, right: 3, top: 2, bottom: 2 } },
+    annotations: target === null || target === undefined ? undefined : { yaxis: [{ y: target, borderColor: "var(--app-muted)", strokeDashArray: 4 }] },
+    tooltip: {
+      shared: false,
+      intersect: false,
+      x: { formatter: (value) => String(value ?? "") },
+      y: { formatter: (value) => Number.isFinite(value) ? String(value) : "Tidak ada data" }
+    }
+  };
+  return <ApexChart className="minibars" type="line" label="Tren bulanan" series={series} options={options} />;
+}
+
+function regressionValues(values: readonly (number | null)[]): (number | null)[] | null {
+  const points = values.flatMap((value, index) => value === null ? [] : [[index, value] as const]);
+  if (points.length < 3) return null;
+  const n = points.length;
+  const sumX = points.reduce((sum, [x]) => sum + x, 0);
+  const sumY = points.reduce((sum, [, y]) => sum + y, 0);
+  const sumXY = points.reduce((sum, [x, y]) => sum + x * y, 0);
+  const sumXX = points.reduce((sum, [x]) => sum + x * x, 0);
+  const denominator = n * sumXX - sumX * sumX;
+  if (denominator === 0) return null;
+  const slope = (n * sumXY - sumX * sumY) / denominator;
+  const intercept = (sumY - slope * sumX) / n;
+  return values.map((value, index) => value === null ? null : slope * index + intercept);
 }
 
 /** Gauge berbasis zona: segmen band + penanda nilai. Angka ambang hanya di tooltip. */
