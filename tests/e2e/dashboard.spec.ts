@@ -10,8 +10,16 @@ const viewports = [
 
 test("login explains domain denial", async ({ page }) => {
   await page.goto("/login?error=domain");
-  await expect(page.getByRole("alert")).toContainText("domain");
-  await expect(page.getByRole("button", { name: /Masuk/ })).toBeVisible();
+  await expect(page.getByRole("alert")).toContainText("email organisasi yang diizinkan");
+  await expect(page.getByRole("button", { name: "Masuk dengan Google" })).toBeVisible();
+  await expect(page.getByRole("button", { name: /bypass/i })).toHaveCount(0);
+});
+
+test("Google login redirects to the authorization endpoint", async ({ page }) => {
+  await page.route("https://accounts.google.com/**", (route) => route.fulfill({ status: 200, body: "OAuth test" }));
+  await page.goto("/login");
+  await page.getByRole("button", { name: "Masuk dengan Google" }).click();
+  await expect(page).toHaveURL(/^https:\/\/accounts\.google\.com\//);
 });
 
 test("TV mode does not scroll at supported resolutions on every tab and slide", async ({ page }) => {

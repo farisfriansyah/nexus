@@ -26,6 +26,8 @@ Untuk menghasilkan secret lokal: `npx auth secret` atau buat nilai acak minimal 
 
 Pembatasan domain diperiksa server-side di callback Auth.js: email harus terverifikasi, domain harus cocok persis tanpa membedakan kapital, dan klaim `hd` jika diberikan harus cocok. `hd` yang dikirim saat authorize hanyalah petunjuk UI, bukan kontrol keamanan.
 
+Halaman login menggunakan Google OAuth. Bypass login pengembangan tidak ditampilkan dan tidak aktif di production, meskipun `AUTH_DEV_LOGIN=1`.
+
 ## Konfigurasi
 
 | Variabel | Fungsi | Default |

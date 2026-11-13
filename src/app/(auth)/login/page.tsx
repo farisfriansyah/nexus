@@ -1,5 +1,4 @@
-import { devLoginAction } from "@/app/actions";
-import { isDevLoginEnabled } from "@/lib/auth/dev-login";
+import { signIn } from "@/auth";
 import { ThemeToggle } from "@/components/shell/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Factory, ShieldAlert } from "lucide-react";
@@ -22,17 +21,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             <span>{error === "domain" ? "Akses hanya tersedia untuk email organisasi yang diizinkan." : "Login gagal. Silakan coba kembali."}</span>
           </div>
         )}
-        {/* Sementara dinonaktifkan sampai Google OAuth dikonfigurasi:
         <form action={async () => { "use server"; await signIn("google", { redirectTo: "/" }); }}>
           <Button className="login-button" type="submit">Masuk dengan Google</Button>
-        </form> */}
-        {isDevLoginEnabled() ? (
-          <form action={devLoginAction}>
-            <Button className="login-button" type="submit">Masuk (bypass sementara)</Button>
-          </form>
-        ) : (
-          <div role="alert" className="alert alert-warning">Login bypass nonaktif. Set AUTH_DEV_LOGIN=1.</div>
-        )}
+        </form>
         <p className="login-note">Gunakan akun organisasi yang terdaftar.</p>
       </section>
     </main>
