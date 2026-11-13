@@ -6,4 +6,4 @@
 .rt-value .status-icon { align-self: center; }
 .rt-value b { font-size: max(var(--font-size-body), 1.5em); line-height: 1; }
 .rt-value small { font-size: var(--font-size-body); color: var(--app-muted); }
-.rt-plot { position: relative; flex: 1; min-height: 0; margin-left: 2.4em; }
+.rt-plot { position: relative; flex: 1; min-height: 0; margin-left: 0em; }
