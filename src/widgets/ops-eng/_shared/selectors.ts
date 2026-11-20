@@ -67,6 +67,14 @@ export function buildCriticalIndicatorAlerts(readings: Record<string, LiveReadin
   });
 }
 
+export function buildCriticalTravoIndicatorAlerts(unit: number, readings: Record<string, LiveReading>, statuses: Record<string, Status>): MonitoredUnit[] {
+  return buildCriticalIndicatorAlerts(readings, statuses).map((alert) => ({
+    ...alert,
+    id: `travo:${unit}:${alert.id}`,
+    group: `Travo ${unit}`
+  }));
+}
+
 /** Unit pantau = indikator × entitas; status = terburuk dari parameternya. */
 export function buildMonitoredUnits(dataset: OpsDataset, live: Record<string, LiveReading> | null, ctx: SelectContext, now = ctx.now, statuses?: Record<string, Status>): MonitoredUnit[] {
   const units: MonitoredUnit[] = [];

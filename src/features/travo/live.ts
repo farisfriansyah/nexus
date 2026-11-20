@@ -7,6 +7,7 @@ import type { LiveReading, Status } from "@/widgets/ops-eng/schemas";
 import { useTravo } from "./data";
 import { formatTravoTimestamp, isTravoReadingStale, parseTravoNumber } from "./format";
 import type { TravoLivePayload } from "./schema";
+import { useIndicatorThresholdRevision } from "@/features/indicator-thresholds/hooks";
 
 const METRIC_PATHS: Record<string, [phase: "l1" | "l2" | "l3", field: "v" | "i"] | ["total", "pft"]> = {
   "panel.phase.r.voltage": ["l1", "v"],
@@ -17,6 +18,7 @@ const METRIC_PATHS: Record<string, [phase: "l1" | "l2" | "l3", field: "v" | "i"]
   "panel.phase.t.current": ["l3", "i"],
   "panel.cos_total": ["total", "pft"]
 };
+export const TRAVO_ALERT_KEYS = Object.keys(METRIC_PATHS);
 
 export const TRAVO_TREND_WINDOW_MS = 12 * 60 * 60 * 1000;
 const MAX_TRAVO_TREND_POINTS = 9_000;
@@ -58,7 +60,7 @@ export type TravoLiveGroup = {
   statuses: Record<string, Status>;
   stale: boolean;
   lastTs: number;
-  live: { readings: Record<string, LiveReading>; statuses: Record<string, Status>; now: number };
+  live: { readings: Record<string, LiveReading>; statuses: Record<string, Status>; now: number; thresholdRevision?: number };
   summary: string;
   updatedLabel?: string;
   pic: string;
@@ -68,6 +70,7 @@ export type TravoLiveGroup = {
 
 export function useTravoLiveGroup(keys: string[], unit: number): TravoLiveGroup {
   const query = useTravo(unit);
+  const thresholdRevision = useIndicatorThresholdRevision();
   const now = query.dataUpdatedAt;
   const data = query.data;
 
@@ -89,8 +92,8 @@ export function useTravoLiveGroup(keys: string[], unit: number): TravoLiveGroup 
         : "no_data";
     }
 
-    return { readings, statuses, now };
-  }, [data, keys, now, unit]);
+    return { readings, statuses, now, thresholdRevision };
+  }, [data, keys, now, thresholdRevision, unit]);
 
   const statuses = Object.fromEntries(keys.map((key) => [key, live.statuses[key] ?? "no_data"]));
   const countable = keys.filter((key) => getIndicator(key).bands.length > 0);

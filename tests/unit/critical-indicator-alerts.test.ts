@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildCriticalIndicatorAlerts } from "../../src/widgets/ops-eng/_shared/selectors";
+import { buildCriticalIndicatorAlerts, buildCriticalTravoIndicatorAlerts } from "../../src/widgets/ops-eng/_shared/selectors";
 
 describe("critical indicator alerts", () => {
   it("creates an alert for each critical live indicator instead of only its aggregated unit", () => {
@@ -23,5 +23,22 @@ describe("critical indicator alerts", () => {
       status: "critical",
       valueText: "42,0 °C"
     });
+  });
+
+  it("keeps Travo alerts unique per unit so off-slide units are monitored independently", () => {
+    const readings = {
+      "panel.phase.r.voltage": { key: "panel.phase.r.voltage", value: 224, ts: 1, trend: [] }
+    };
+    const statuses = { "panel.phase.r.voltage": "critical" as const };
+
+    const firstUnit = buildCriticalTravoIndicatorAlerts(1, readings, statuses);
+    const fourthUnit = buildCriticalTravoIndicatorAlerts(4, readings, statuses);
+
+    expect(firstUnit[0]).toMatchObject({
+      id: "travo:1:indicator:panel.phase.r.voltage",
+      group: "Travo 1",
+      status: "critical"
+    });
+    expect(fourthUnit[0]?.id).toBe("travo:4:indicator:panel.phase.r.voltage");
   });
 });
