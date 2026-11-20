@@ -1,9 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { TravoLivePayload, TravoWeight } from "../../src/features/travo/schema";
+import { Prisma } from "../../src/generated/prisma/client";
 
 const mocks = vi.hoisted(() => ({
   states: new Map<string, { critical: boolean; awaitingNormal: boolean; observedAt: Date }>(),
-  logs: [] as { action: string; target: string; details: { status: string } }[]
+  logs: [] as { action: string; target: string; details: { status: string } }[],
+  failures: [] as Error[],
+  attempts: 0
 }));
 
 vi.mock("@/features/indicator-thresholds/store", async () => {
@@ -13,7 +16,11 @@ vi.mock("@/features/indicator-thresholds/store", async () => {
 
 vi.mock("@/lib/db", () => ({
   getDb: () => ({
-    $transaction: async (run: (tx: object) => Promise<void>) => run({
+    $transaction: async (run: (tx: object) => Promise<void>) => {
+      mocks.attempts += 1;
+      const error = mocks.failures.shift();
+      if (error) throw error;
+      return run({
       $executeRaw: async (_query: TemplateStringsArray, unit: number, key: string, initial: Date) => {
         const id = `${unit}:${key}`;
         if (!mocks.states.has(id)) mocks.states.set(id, { critical: false, awaitingNormal: false, observedAt: initial });
@@ -25,7 +32,8 @@ vi.mock("@/lib/db", () => ({
         }
       },
       auditLog: { create: async ({ data }: { data: typeof mocks.logs[number] }) => { mocks.logs.push(data); } }
-    })
+      });
+    }
   })
 }));
 
@@ -45,6 +53,8 @@ describe("Travo alert audit", () => {
   beforeEach(() => {
     mocks.states.clear();
     mocks.logs.length = 0;
+    mocks.failures.length = 0;
+    mocks.attempts = 0;
   });
 
   it("records transitions once per unit, including return to warning and re-entry", async () => {
@@ -85,5 +95,44 @@ describe("Travo alert audit", () => {
     await recordTravoAlertTransitions(payload(1, 234, latest), time + 31_000);
     expect(mocks.logs).toHaveLength(1);
     expect(mocks.states.get("1:panel.phase.r.voltage")?.critical).toBe(true);
+  });
+
+  it("retries a MariaDB deadlock and records the transition once", async () => {
+    mocks.failures.push(new Prisma.PrismaClientKnownRequestError("deadlock", {
+      code: "P2010",
+      clientVersion: "test",
+      meta: { driverAdapterError: { cause: { kind: "TransactionWriteConflict" } } }
+    }));
+    const warning = vi.spyOn(console, "warn").mockImplementation(() => {});
+    try {
+      const time = Date.parse("2026-11-20T06:00:00Z");
+      await recordTravoAlertTransitions(payload(1, 224, new Date(time).toISOString()), time);
+      expect(mocks.attempts).toBe(2);
+      expect(mocks.logs.map(({ action }) => action)).toEqual(["alert.critical"]);
+      expect(warning).toHaveBeenCalledOnce();
+    } finally {
+      warning.mockRestore();
+    }
+  });
+
+  it("propagates unrelated errors without retrying", async () => {
+    const error = new Error("database unavailable");
+    mocks.failures.push(error);
+    const time = Date.parse("2026-11-20T06:00:00Z");
+    await expect(recordTravoAlertTransitions(payload(1, 224, new Date(time).toISOString()), time)).rejects.toBe(error);
+    expect(mocks.attempts).toBe(1);
+  });
+
+  it("stops retrying after three failed transactions", async () => {
+    const error = new Prisma.PrismaClientKnownRequestError("deadlock", { code: "P2034", clientVersion: "test" });
+    mocks.failures.push(error, error, error);
+    const warning = vi.spyOn(console, "warn").mockImplementation(() => {});
+    try {
+      const time = Date.parse("2026-11-20T06:00:00Z");
+      await expect(recordTravoAlertTransitions(payload(1, 224, new Date(time).toISOString()), time)).rejects.toBe(error);
+      expect(mocks.attempts).toBe(3);
+    } finally {
+      warning.mockRestore();
+    }
   });
 });

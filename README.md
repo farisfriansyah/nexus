@@ -53,6 +53,8 @@ Login Google dan login pengembangan yang berhasil dicatat dalam tabel `LoginLog`
 
 Tabel `AuditLog` mencatat perubahan ambang (nilai sebelum dan sesudah), perubahan layout/preset, penolakan domain atau akses, kegagalan callback Google, serta transisi alert Travo ke bahaya, keluar dari bahaya, dan kembali normal. Alert dinilai dari pembacaan aktual yang valid ketika dashboard aktif; tidak ada pemantauan ketika seluruh dashboard tertutup. Data usang atau tidak tersedia tidak dianggap sebagai pemulihan. `TravoAlertState` menyimpan status terakhir untuk mencegah duplikasi antar-dashboard. Waktu pada data alert adalah timestamp sumber, sedangkan `createdAt` adalah waktu pencatatan database.
 
+Jika terjadi deadlock database, pencatatan alert dicoba ulang maksimal dua kali; kegagalan setelah percobaan ulang dicatat pada log server.
+
 Log yang berusia lebih dari satu tahun dihapus otomatis paling sering sekali sehari saat aplikasi menerima data Travo; jika dashboard tidak aktif, pembersihan tertunda sampai data berikutnya diterima. Batasi akses database ke tabel log karena mengandung data pengguna.
 
 ## Database lokal XAMPP
