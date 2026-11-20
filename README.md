@@ -15,6 +15,8 @@ pnpm dev
 
 Untuk menghasilkan secret lokal: `npx auth secret` atau buat nilai acak minimal 32 karakter. Jangan commit `.env.local`.
 
+`pnpm build` menghasilkan ulang Prisma Client dari skema terbaru sebelum membangun aplikasi. Jika pemeriksaan tipe dijalankan terpisah setelah skema berubah, jalankan `pnpm db:generate` terlebih dahulu.
+
 ## Google OAuth
 
 1. Di Google Cloud Console, buat/pilih project dan aktifkan Google Identity / OAuth.
