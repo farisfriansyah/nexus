@@ -3,6 +3,7 @@ import { getDb } from "@/lib/db";
 import { bandDefSchema, type BandDef } from "@/widgets/ops-eng/schemas";
 import type { Prisma } from "@/generated/prisma/client";
 import { validateIndicatorBands } from "./schema";
+import { writeAudit } from "@/lib/audit";
 
 export type IndicatorThresholdRecord = {
   key: string;
@@ -79,10 +80,17 @@ export async function listIndicatorThresholds(): Promise<IndicatorThresholdRecor
 }
 
 export async function saveIndicatorThreshold(key: string, bands: BandDef[], updatedBy: string | null): Promise<IndicatorThresholdRecord> {
-  const saved = await getDb().indicatorThreshold.upsert({
-    where: { key },
-    create: { key, bands: bands as Prisma.InputJsonValue, updatedBy },
-    update: { bands: bands as Prisma.InputJsonValue, updatedBy }
+  const saved = await getDb().$transaction(async (tx) => {
+    const rows = await tx.$queryRaw<{ bands: unknown }[]>`SELECT bands FROM IndicatorThreshold WHERE \`key\` = ${key} FOR UPDATE`;
+    const previous = rows[0] ? await tx.indicatorThreshold.findUniqueOrThrow({ where: { key } }) : null;
+    const oldBands = previous?.bands ?? indicators.find((indicator) => indicator.key === key)!.bands;
+    const result = await tx.indicatorThreshold.upsert({
+      where: { key },
+      create: { key, bands: bands as Prisma.InputJsonValue, updatedBy },
+      update: { bands: bands as Prisma.InputJsonValue, updatedBy }
+    });
+    await writeAudit(tx, { action: "threshold.update", actor: updatedBy, target: key, details: { before: oldBands, after: bands } as Prisma.InputJsonValue });
+    return result;
   });
   const cache = getThresholdCache();
   cache.expiresAt = 0;

@@ -45,3 +45,39 @@ model IndicatorThreshold {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+/// Riwayat login yang berhasil, tanpa menyimpan kredensial atau token.
+model LoginLog {
+  id        Int      @id @default(autoincrement())
+  email     String   @db.VarChar(254)
+  name      String?  @db.VarChar(191)
+  role      String   @db.VarChar(10)
+  provider  String   @db.VarChar(50)
+  userAgent String?  @db.VarChar(512)
+  createdAt DateTime @default(now())
+
+  @@index([email, createdAt])
+  @@index([createdAt])
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  action    String   @db.VarChar(50)
+  actor     String?  @db.VarChar(254)
+  target    String?  @db.VarChar(191)
+  details   Json?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([action, createdAt])
+}
+
+model TravoAlertState {
+  unit       Int
+  key        String   @db.VarChar(191)
+  critical   Boolean
+  awaitingNormal Boolean
+  observedAt DateTime
+
+  @@id([unit, key])
+}

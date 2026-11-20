@@ -3,8 +3,10 @@ import type { Session } from "next-auth";
 import { cookies } from "next/headers";
 import { auth } from "@/auth";
 import { DEV_LOGIN_COOKIE, devSession, isDevLoginEnabled } from "@/lib/auth/dev-login";
+import { hasManagementAccess } from "@/lib/auth/roles";
+import { recordSecurityAudit } from "@/lib/audit";
 
-export type UserRole = "viewer" | "admin";
+export type { UserRole } from "@/lib/auth/roles";
 export type AppSession = Session;
 
 function isSession(value: unknown): value is AppSession {
@@ -22,8 +24,16 @@ export async function requireSession(): Promise<AppSession> {
   return session;
 }
 
-export async function requireAdmin(): Promise<AppSession> {
+export async function requireManagementAccess(target = "management"): Promise<AppSession> {
   const session = await requireSession();
-  if (session.user.role !== "admin") redirect("/unauthorized");
+  if (!hasManagementAccess(session.user.role)) {
+    await recordSecurityAudit({
+      action: "access.denied",
+      actor: session.user.email ?? null,
+      target,
+      details: { role: session.user.role }
+    });
+    redirect("/unauthorized");
+  }
   return session;
 }

@@ -7,7 +7,7 @@ import { RefreshCw, Settings2 } from "lucide-react";
 import { Dialog } from "radix-ui";
 import type { DashboardMode } from "@/features/widgets-registry/types";
 import type { Status } from "@/widgets/ops-eng/schemas";
-import { useIsAdmin } from "@/features/preferences/preferences-provider";
+import { useCanManage } from "@/features/preferences/preferences-provider";
 import { IndicatorThresholdEditor, type ApiIndicatorRecord } from "@/components/widgets/indicator-threshold-editor";
 import { Button } from "@/components/ui/button";
 import { StatusBadge, StatusIcon } from "./status";
@@ -53,7 +53,7 @@ export interface WidgetCardProps {
 
 export function WidgetCard({ mode, title, subtitle, status, showBadge = false, loading, error, onRetry, stale, updatedLabel, source, showDummyBadge = process.env.NODE_ENV !== "production", summary, pic, widgetId, indicatorKeys = [], children }: WidgetCardProps) {
   const forced = useContext(ForcedStateContext);
-  const isAdmin = useIsAdmin();
+  const canManage = useCanManage();
   const [thresholdSettingsOpen, setThresholdSettingsOpen] = useState(false);
   const [thresholdRecords, setThresholdRecords] = useState<ApiIndicatorRecord[] | null>(null);
   const [thresholdLoading, setThresholdLoading] = useState(false);
@@ -92,7 +92,7 @@ export function WidgetCard({ mode, title, subtitle, status, showBadge = false, l
           {mode === "analytic" && pic && <span className="wx-chip wx-pic" title="Penanggung jawab">PIC {pic}</span>}
           {stale && <span className="wx-chip wx-stale" title="Data tidak diperbarui sesuai jadwal">Data usang</span>}
           {showBadge && status && <StatusBadge status={status} />}
-          {isAdmin && indicatorKeys.length > 0 && (
+          {canManage && indicatorKeys.length > 0 && (
             <Dialog.Root open={thresholdSettingsOpen} onOpenChange={(open) => void openThresholdSettings(open)}>
               <Dialog.Trigger asChild>
                 <button type="button" className="wx-threshold-trigger" aria-label={`Atur batas indikator ${title}`} title="Atur batas indikator" onClick={(event) => event.stopPropagation()}>

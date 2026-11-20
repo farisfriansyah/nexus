@@ -1,7 +1,7 @@
 import { getIndicator } from "@/config/ops-eng/indicators";
 import { listIndicatorThresholds, saveIndicatorThreshold } from "@/features/indicator-thresholds/store";
 import { validateIndicatorBands } from "@/features/indicator-thresholds/schema";
-import { requireAdmin, requireSession } from "@/lib/auth/session";
+import { requireManagementAccess, requireSession } from "@/lib/auth/session";
 
 const noStore = { "Cache-Control": "no-store" };
 
@@ -22,7 +22,7 @@ export async function GET() {
 }
 
 export async function PUT(request: Request) {
-  const session = await requireAdmin();
+  const session = await requireManagementAccess("indicator-thresholds");
   const body: unknown = await request.json().catch(() => null);
   if (typeof body !== "object" || body === null || !("key" in body) || typeof body.key !== "string") {
     return Response.json({ error: "Kunci indikator tidak valid" }, { status: 422, headers: noStore });

@@ -35,13 +35,23 @@ Halaman login menggunakan Google OAuth. Bypass login pengembangan tidak ditampil
 | `AUTH_SECRET` | Kunci sesi Auth.js | wajib |
 | `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET` | Kredensial Google OAuth | wajib |
 | `ALLOWED_EMAIL_DOMAIN` | Domain email yang diizinkan | `mikatasa.com` |
-| `ADMIN_EMAILS` | Daftar email admin dipisah koma | kosong |
+| `ADMIN_EMAILS` | Daftar email legacy dengan akses kelola, dipisah koma; dipakai jika email tidak ditemukan di tabel `users` | kosong |
 | `SESSION_MAX_AGE_SECONDS` | Durasi maksimum sesi JWT | 30 hari |
 | `API_BASE_URL` | URL backend CI4/Laravel untuk BFF | tidak ada |
-| `DATABASE_URL` | URL MySQL/MariaDB untuk layout | `mysql://root@127.0.0.1:3306/nexus_plant` |
+| `DATABASE_URL` | URL MySQL/MariaDB untuk role pengguna dan data aplikasi | `mysql://root@127.0.0.1:3306/nexus_plant` |
 | `HEARTBEAT_RELOAD_MINUTES` | Watchdog jika heartbeat macet | 10 menit |
 
+Role login dibaca dari kolom `users.email` dan `users.role` berdasarkan email Google. Role `dev` memiliki akses kelola, termasuk pengaturan ambang indikator dan layout; role `viewer` hanya dapat melihat dashboard. Role `admin` lama tetap diakui untuk kompatibilitas. Perubahan role berlaku setelah pengguna login kembali. `ADMIN_EMAILS` dipertahankan sebagai fallback kompatibilitas jika akun tidak memiliki baris di tabel `users`.
+
 Route privat memeriksa sesi di proxy, server layout, serta handler yang memerlukan autentikasi. Route API backend sebaiknya menggunakan `requireSession()` di setiap handler.
+
+## Riwayat login
+
+Login Google dan login pengembangan yang berhasil dicatat dalam tabel `LoginLog`: email, nama, role, metode login, user-agent, dan waktu pencatatan database. Token dan kredensial tidak disimpan. Kegagalan menyimpan log dicatat pada log server dan tidak memblokir login; akses tabel perlu dibatasi karena memuat data pengguna. Jalankan `pnpm db:deploy` pada database deployment untuk menerapkan migrasi sebelum memakai fitur ini.
+
+Tabel `AuditLog` mencatat perubahan ambang (nilai sebelum dan sesudah), perubahan layout/preset, penolakan domain atau akses, kegagalan callback Google, serta transisi alert Travo ke bahaya, keluar dari bahaya, dan kembali normal. Alert dinilai dari pembacaan aktual yang valid ketika dashboard aktif; tidak ada pemantauan ketika seluruh dashboard tertutup. Data usang atau tidak tersedia tidak dianggap sebagai pemulihan. `TravoAlertState` menyimpan status terakhir untuk mencegah duplikasi antar-dashboard. Waktu pada data alert adalah timestamp sumber, sedangkan `createdAt` adalah waktu pencatatan database.
+
+Log yang berusia lebih dari satu tahun dihapus otomatis paling sering sekali sehari saat aplikasi menerima data Travo; jika dashboard tidak aktif, pembersihan tertunda sampai data berikutnya diterima. Batasi akses database ke tabel log karena mengandung data pengguna.
 
 ## Database lokal XAMPP
 

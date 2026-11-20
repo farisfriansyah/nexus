@@ -1,5 +1,5 @@
 import { deleteTvLayoutProfile, getTvLayoutProfile, renameTvLayoutProfile } from "@/features/layout/store";
-import { requireAdmin, requireSession } from "@/lib/auth/session";
+import { requireManagementAccess, requireSession } from "@/lib/auth/session";
 
 type Ctx = { params: Promise<{ id: string }> };
 const noStore = { "Cache-Control": "no-store" };
@@ -25,7 +25,7 @@ export async function GET(_request: Request, { params }: Ctx) {
 }
 
 export async function PATCH(request: Request, { params }: Ctx) {
-  await requireAdmin();
+  const session = await requireManagementAccess("profile.rename");
   const id = parseId((await params).id);
   if (id === null) return Response.json({ error: "Preset tidak ditemukan" }, { status: 404 });
   const body: unknown = await request.json().catch(() => null);
@@ -36,7 +36,7 @@ export async function PATCH(request: Request, { params }: Ctx) {
     return Response.json({ error: "Nama preset wajib diisi (maksimal 100 karakter)" }, { status: 422 });
   }
   try {
-    const profile = await renameTvLayoutProfile(id, name);
+    const profile = await renameTvLayoutProfile(id, name, session.user.email ?? null);
     return profile
       ? Response.json(profile, { headers: noStore })
       : Response.json({ error: "Preset tidak ditemukan" }, { status: 404 });
@@ -50,11 +50,11 @@ export async function PATCH(request: Request, { params }: Ctx) {
 }
 
 export async function DELETE(_request: Request, { params }: Ctx) {
-  await requireAdmin();
+  const session = await requireManagementAccess("profile.delete");
   const id = parseId((await params).id);
   if (id === null) return Response.json({ error: "Preset tidak ditemukan" }, { status: 404 });
   try {
-    const deleted = await deleteTvLayoutProfile(id);
+    const deleted = await deleteTvLayoutProfile(id, session.user.email ?? null);
     return deleted
       ? Response.json({ ok: true }, { headers: noStore })
       : Response.json({ error: "Preset tidak ditemukan" }, { status: 404 });

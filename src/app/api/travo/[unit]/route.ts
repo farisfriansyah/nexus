@@ -3,6 +3,8 @@ import { getDb } from "@/lib/db";
 import { configForTravoUnit } from "@/features/travo/config";
 import type { TravoConfig } from "@/features/travo/config";
 import { travoApiPayloadSchema } from "@/features/travo/schema";
+import { recordTravoAlertTransitions } from "@/features/travo/alert-log";
+import { cleanupOldLogs } from "@/lib/audit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -73,10 +75,17 @@ export async function GET(_request: Request, { params }: RouteContext) {
     return Response.json({ error: `Struktur data Travo ${unit} tidak valid.` }, { status: 502, headers: noStore });
   }
 
-  return Response.json({
+  const data = {
     unit,
     machineId: config.machineId,
     port,
     ...checked.data
-  }, { headers: noStore });
+  };
+  try {
+    await recordTravoAlertTransitions(data);
+  } catch (error) {
+    console.error(`[audit] Gagal mencatat alert Travo ${unit}`, error);
+  }
+  await cleanupOldLogs();
+  return Response.json(data, { headers: noStore });
 }

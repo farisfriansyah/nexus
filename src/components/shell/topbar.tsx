@@ -15,12 +15,12 @@ import type { TvLayoutProfileSummary } from "@/features/layout/store";
 const PROFILE_STORAGE_KEY = "nexus-tv-layout-profile";
 
 export function Topbar({
-  mode, name, email, isAdmin = false, profiles = []
+  mode, name, email, canManage = false, profiles = []
 }: {
   mode: "tv" | "analytic";
   name?: string | null;
   email: string;
-  isAdmin?: boolean;
+  canManage?: boolean;
   profiles?: TvLayoutProfileSummary[] | null;
 }) {
   const params = useParams<{ tab?: string }>();
@@ -101,7 +101,7 @@ export function Topbar({
         )}
         <ModeSwitch tab={activeTab} />
         <ThemeToggle />
-        {mode === "tv" && isAdmin && (
+        {mode === "tv" && canManage && (
           <>
             <Link href="/tv/layout-profiles" className="topbar-edit-layout" title="Kelola preset layout"><LayoutGrid size={14} /><span>Preset layout</span></Link>
             <Link href={`/tv/layout/${activeTab}${profileId ? `?profileId=${profileId}` : ""}`} className="topbar-edit-layout" title="Edit susunan slide dan widget"><LayoutGrid size={14} /><span>Edit layout</span></Link>

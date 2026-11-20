@@ -1,6 +1,18 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { isAllowedGoogleProfile } from "../../src/lib/auth/domain";
 import { isDevLoginEnabled } from "../../src/lib/auth/dev-login";
+import { hasManagementAccess, parseUserRole } from "../../src/lib/auth/roles";
+
+describe("user roles", () => {
+  it("recognizes the database dev role case-insensitively", () => {
+    expect(parseUserRole(" Dev ")).toBe("dev");
+  });
+
+  it("grants management access to dev while keeping viewer read-only", () => {
+    expect(hasManagementAccess("dev")).toBe(true);
+    expect(hasManagementAccess("viewer")).toBe(false);
+  });
+});
 
 describe("isAllowedGoogleProfile", () => {
   const domain = "mikatasa.com";

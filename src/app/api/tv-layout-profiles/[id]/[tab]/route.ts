@@ -1,6 +1,6 @@
 import { getTab } from "@/config/tabs";
 import { getLayoutFromProfile, getTvLayoutProfile, saveProfileTabLayout, validateLayout } from "@/features/layout/store";
-import { requireAdmin, requireSession } from "@/lib/auth/session";
+import { requireManagementAccess, requireSession } from "@/lib/auth/session";
 
 type Ctx = { params: Promise<{ id: string; tab: string }> };
 const noStore = { "Cache-Control": "no-store" };
@@ -29,14 +29,14 @@ export async function GET(_request: Request, { params }: Ctx) {
 }
 
 export async function PUT(request: Request, { params }: Ctx) {
-  await requireAdmin();
+  const session = await requireManagementAccess("profile.layout.save");
   const { id: rawId, tab } = await params;
   const id = parseId(rawId);
   if (id === null || !getTab(tab)) return Response.json({ error: "Preset atau tab tidak ditemukan" }, { status: 404 });
   const checked = validateLayout(await request.json().catch(() => null), tab);
   if (!checked.ok) return Response.json({ error: checked.error }, { status: 422 });
   try {
-    const saved = await saveProfileTabLayout(id, tab, checked.layout);
+    const saved = await saveProfileTabLayout(id, tab, checked.layout, session.user.email ?? null);
     return saved
       ? Response.json({ id, tab, status: "saved" }, { headers: noStore })
       : Response.json({ error: "Preset tidak ditemukan" }, { status: 404 });

@@ -6,11 +6,11 @@ import type { StoreApi } from "zustand";
 import { useStore } from "zustand";
 
 const PreferencesContext = createContext<StoreApi<PreferencesState> | null>(null);
-const AdminContext = createContext(false);
+const CanManageContext = createContext(false);
 
-export function PreferencesProvider({ email, isAdmin = false, children }: { email: string; isAdmin?: boolean; children: ReactNode }) {
+export function PreferencesProvider({ email, canManage = false, children }: { email: string; canManage?: boolean; children: ReactNode }) {
   const [store] = useState(() => createPreferencesStore(email));
-  return <AdminContext.Provider value={isAdmin}><PreferencesContext.Provider value={store}>{children}</PreferencesContext.Provider></AdminContext.Provider>;
+  return <CanManageContext.Provider value={canManage}><PreferencesContext.Provider value={store}>{children}</PreferencesContext.Provider></CanManageContext.Provider>;
 }
 
 export function usePreferences<T>(selector: (state: PreferencesState) => T): T {
@@ -19,6 +19,6 @@ export function usePreferences<T>(selector: (state: PreferencesState) => T): T {
   return useStore(store, selector);
 }
 
-export function useIsAdmin(): boolean {
-  return useContext(AdminContext);
+export function useCanManage(): boolean {
+  return useContext(CanManageContext);
 }

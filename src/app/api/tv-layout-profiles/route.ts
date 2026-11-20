@@ -1,5 +1,5 @@
 import { createTvLayoutProfile, listTvLayoutProfiles } from "@/features/layout/store";
-import { requireAdmin, requireSession } from "@/lib/auth/session";
+import { requireManagementAccess, requireSession } from "@/lib/auth/session";
 
 const noStore = { "Cache-Control": "no-store" };
 
@@ -13,7 +13,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const session = await requireAdmin();
+  const session = await requireManagementAccess("profile.create");
   const body: unknown = await request.json().catch(() => null);
   const name = typeof body === "object" && body !== null && "name" in body && typeof body.name === "string"
     ? body.name.trim()

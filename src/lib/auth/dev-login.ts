@@ -5,6 +5,6 @@ export function isDevLoginEnabled(): boolean {
 }
 
 export const devSession = {
-  user: { name: "Dev User", email: "dev@mikatasa.com", role: "admin" as const },
+  user: { name: "Dev User", email: "dev@mikatasa.com", role: "dev" as const },
   expires: "2099-01-01T00:00:00.000Z"
 };
