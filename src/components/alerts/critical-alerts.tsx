@@ -3,6 +3,7 @@
 import "./critical-alerts.css";
 import { useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
+import Link from "next/link";
 import { StatusIcon } from "@/widgets/_primitives/status";
 import { useTravoLiveGroup, TRAVO_ALERT_KEYS } from "@/features/travo/live";
 import { buildCriticalTravoIndicatorAlerts } from "@/widgets/ops-eng/_shared/selectors";
@@ -56,7 +57,7 @@ export function CriticalAlerts() {
           <StatusIcon status="critical" size="1.5em" />
           <div className="ca-body">
             <strong>{alert.label}</strong>
-            <span>Critical{alert.valueText ? ` · ${alert.valueText}` : ""}</span>
+            <span>Bahaya{alert.valueText ? ` · ${alert.valueText}` : ""}</span>
             <small>{alert.group} · PIC {alert.pic} · {alert.at}</small>
           </div>
           <button type="button" className="ca-close" onClick={() => close(alert.id)} aria-label={`Tutup alert ${alert.label}`}><X size={16} /></button>
@@ -68,6 +69,7 @@ export function CriticalAlerts() {
           <button type="button" onClick={() => setAlerts([])}>Tutup semua</button>
         </div>
       )}
+      <Link className="ca-history" href="/analytics/notifications">Lihat riwayat notifikasi</Link>
     </div>
   );
 }

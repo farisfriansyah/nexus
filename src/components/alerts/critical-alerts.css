@@ -9,5 +9,7 @@
 .ca-close:hover, .ca-close:focus-visible { background: var(--app-surface-raised); color: var(--app-text); }
 .ca-footer { display: flex; justify-content: flex-end; align-items: center; gap: .75rem; font-size: var(--font-size-body); color: var(--app-muted); }
 .ca-footer button { padding: .25rem .6rem; border: 1px solid var(--app-border); border-radius: .4rem; background: var(--app-surface); color: var(--app-text); cursor: pointer; font: inherit; }
+.ca-history { align-self: flex-end; padding: .3rem .6rem; border: 1px solid var(--app-border); border-radius: .4rem; background: var(--app-surface); color: var(--app-text); font-size: var(--font-size-body); font-weight: 600; }
+.ca-history:hover, .ca-history:focus-visible { background: var(--app-surface-raised); }
 @keyframes ca-in { from { opacity: 0; transform: translateY(.5rem); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .ca-item { animation: none; } }

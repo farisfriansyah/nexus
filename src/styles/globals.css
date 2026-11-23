@@ -214,6 +214,10 @@ a { color: inherit; text-decoration: none; }
   .filter-bar select { min-width: 105px; }
   .analytic-row { grid-template-columns: 1fr !important; }
 }
+@media (max-width: 600px) {
+  .topbar .logout-label, .topbar-edit-layout span { display: none; }
+  .topbar .tv-profile-select select { max-width: 90px; }
+}
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .15s !important; }
 }
