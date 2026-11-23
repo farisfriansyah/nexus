@@ -10,6 +10,7 @@ import { ThemeToggle } from "@/components/shell/theme-toggle";
 import { ModeSwitch } from "@/components/shell/mode-switch";
 import { UserMenu } from "@/components/shell/user-menu";
 import { TvSettings } from "@/components/tv/tv-settings";
+import { NotificationsButton } from "@/components/notifications/notifications";
 import type { TvLayoutProfileSummary } from "@/features/layout/store";
 
 const PROFILE_STORAGE_KEY = "nexus-tv-layout-profile";
@@ -101,6 +102,7 @@ export function Topbar({
         )}
         <ModeSwitch tab={activeTab} />
         <ThemeToggle />
+        <NotificationsButton />
         {mode === "tv" && canManage && (
           <>
             <Link href="/tv/layout-profiles" className="topbar-edit-layout" title="Kelola preset layout"><LayoutGrid size={14} /><span>Preset layout</span></Link>

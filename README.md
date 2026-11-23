@@ -57,6 +57,8 @@ Jika terjadi deadlock database, pencatatan alert dicoba ulang maksimal dua kali;
 
 Log yang berusia lebih dari satu tahun dihapus otomatis paling sering sekali sehari saat aplikasi menerima data Travo; jika dashboard tidak aktif, pembersihan tertunda sampai data berikutnya diterima. Batasi akses database ke tabel log karena mengandung data pengguna.
 
+Tombol notifikasi menampilkan indikator Travo yang merah berdasarkan pembacaan tidak lebih dari 30 detik serta riwayat alert terbaru; pilih **Lihat semua** untuk riwayat lengkap, termasuk yang sudah tidak merah. Tidak adanya pembacaan merah terbaru tidak memastikan sensor normal. Status dibaca dan teratasi berlaku bersama untuk semua pengguna yang login. Teratasi ditandai manual dan tidak berarti sensor sudah normal. Alert simulasi tidak disimpan; pemantauan dan retensi mengikuti batasan di atas. Jalankan `pnpm db:deploy` sebelum menggunakan fitur notifikasi.
+
 ## Database lokal XAMPP
 
 1. Jalankan **MySQL** dari XAMPP Control Panel dan buat database `nexus_plant` lewat phpMyAdmin dengan collation `utf8mb4_unicode_ci`.

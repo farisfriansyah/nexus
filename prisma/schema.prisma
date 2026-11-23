@@ -66,6 +66,8 @@ model AuditLog {
   actor     String?  @db.VarChar(254)
   target    String?  @db.VarChar(191)
   details   Json?
+  isRead    Boolean  @default(false)
+  isResolved Boolean @default(false)
   createdAt DateTime @default(now())
 
   @@index([createdAt])
